@@ -212,7 +212,7 @@ app.post('/api/payment/create', async (req, res) => {
     };
 
     // Вызов Xsolla API для создания токена
-    const xsollaResponse = await fetch('https://store.xsolla.com/api/v2/project/' + process.env.XSOLLA_PROJECT_ID + '/payment/token', {
+    const xsollaResponse = await fetch('https://store.xsolla.com/api/v2/paystation/token', {
       method: 'POST',
       headers: {
         'Authorization': 'Basic ' + Buffer.from(process.env.XSOLLA_MERCHANT_ID + ':' + process.env.XSOLLA_API_KEY).toString('base64'),
