@@ -34,31 +34,17 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Groq API (для AI поддержки)
+// ВАЖНО: Добавь свой ключ в переменные окружения на Render.com!
+const GROQ_API_KEY = process.env.GROQ_API_KEY || 'your_groq_api_key_here';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
 // Supabase Client
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(
   process.env.SUPABASE_URL || 'https://xlruthqgapbgxfowavln.supabase.co',
   process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhscnV0aHFnYXBiZ3hmb3dhdmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTY2MjMsImV4cCI6MjA4NTI3MjYyM30.dwBTGOPGgEb2Qg3ZaK8Q8XJjx64gdHQy48r_pnLxPic'
 );
-
-// Groq API (для AI поддержки)
-// ВАЖНО: Добавь свой ключ в переменные окружения на Render.com!
-const GROQ_API_KEY = process.env.GROQ_API_KEY || 'your_groq_api_key_here';
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-
-// Xsolla Configuration
-const XSOLLA_MERCHANT_ID = process.env.XSOLLA_MERCHANT_ID || 'YOUR_MERCHANT_ID';
-const XSOLLA_PROJECT_ID = process.env.XSOLLA_PROJECT_ID || 'YOUR_PROJECT_ID';
-const XSOLLA_API_KEY = process.env.XSOLLA_API_KEY || 'YOUR_API_KEY';
-const XSOLLA_WEBHOOK_SECRET = process.env.XSOLLA_WEBHOOK_SECRET || 'YOUR_WEBHOOK_SECRET';
-
-// Supabase Configuration
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xlruthqgapbgxfowavln.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhscnV0aHFnYXBiZ3hmb3dhdmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTY2MjMsImV4cCI6MjA4NTI3MjYyM30.dwBTGOPGgEb2Qg3ZaK8Q8XJjx64gdHQy48r_pnLxPic';
-
-// Инициализация Supabase клиента
-const { createClient } = require('@supabase/supabase-js');
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Системный промпт
 const SYSTEM_PROMPT = `Ты — сотрудник технической поддержки чита Zenex для Minecraft 1.21.4. Чит работает через кастомный лоадер.
