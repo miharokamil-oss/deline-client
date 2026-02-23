@@ -189,13 +189,14 @@ app.post('/api/payment/create', async (req, res) => {
     // Создаем токен платежа для Xsolla
     const paymentData = {
       user: {
-        id: { value: userId },
+        id: { value: String(userId) },
         email: { value: email }
       },
       settings: {
         project_id: parseInt(process.env.XSOLLA_PROJECT_ID),
         currency: 'RUB',
-        language: 'ru'
+        language: 'ru',
+        return_url: `https://zenexdls.fun/payment-success.html?order_id=${orderId}`
       },
       purchase: {
         checkout: {
@@ -212,7 +213,7 @@ app.post('/api/payment/create', async (req, res) => {
     };
 
     // Вызов Xsolla API для создания токена
-    const xsollaResponse = await fetch('https://store.xsolla.com/api/v2/paystation/token', {
+    const xsollaResponse = await fetch(`https://store.xsolla.com/api/v2/project/${process.env.XSOLLA_PROJECT_ID}/payment/ui/token`, {
       method: 'POST',
       headers: {
         'Authorization': 'Basic ' + Buffer.from(process.env.XSOLLA_MERCHANT_ID + ':' + process.env.XSOLLA_API_KEY).toString('base64'),
