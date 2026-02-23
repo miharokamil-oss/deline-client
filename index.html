@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zenex Client - Главная</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./components/navbar.css">
+  <link rel="stylesheet" href="./components/footer.css">
+  <link rel="stylesheet" href="./components/background.css">
+  <link rel="stylesheet" href="./components/light-theme.css">
+  <link rel="stylesheet" href="./components/input-optimization.css">
+  <link rel="stylesheet" href="./components/support-chat.css">
+  <link rel="stylesheet" href="./components/ban-modal.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="./components/theme.js"></script>
+  <script src="./components/i18n.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px;
+      color: #fff;
+      min-height: 100vh;
+      padding-top: 100px;
+    }
+
+    /* Hero */
+    .hero {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      min-height: 80vh;
+      padding: 50px 100px;
+    }
+
+    .hero-content {
+      max-width: 600px;
+    }
+
+    .hero-content h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 64px;
+      margin-bottom: 20px;
+      color: #d0d0d8;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-content p {
+      font-size: 20px;
+      margin-bottom: 40px;
+      color: rgba(255, 255, 255, 0.55);
+      line-height: 1.6;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(120,120,140,0.25) 0%, rgba(80,80,100,0.6) 100%);
+      border: 1px solid rgba(180,180,200,0.2);
+      border-radius: 14px;
+      color: #fff;
+      padding: 16px 42px;
+      font-size: 17px;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-decoration: none;
+      display: inline-block;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+      border-color: rgba(200,200,220,0.35);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      color: rgba(255,255,255,0.6);
+      padding: 16px 42px;
+      font-size: 17px;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-secondary:hover {
+      border-color: rgba(255,255,255,0.25);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    /* Features */
+    .features {
+      padding: 80px 50px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .features-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 42px;
+      text-align: center;
+      margin-bottom: 60px;
+      color: rgba(200, 200, 215, 0.9);
+      letter-spacing: 0.04em;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 18px;
+      padding: 36px;
+      transition: all 0.35s;
+      backdrop-filter: blur(20px);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(255, 255, 255, 0.14);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .feature-icon {
+      font-size: 40px;
+      margin-bottom: 18px;
+      filter: grayscale(100%) brightness(1.2);
+    }
+
+    .feature-card h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      margin-bottom: 12px;
+      color: rgba(200, 200, 215, 0.9);
+      letter-spacing: 0.03em;
+    }
+
+    .feature-card p {
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── Light Theme ── */
+    body.light-theme {
+      color: #1a1a1a;
+    }
+    body.light-theme .hero-content h1 {
+      color: #1a1a1a;
+    }
+    body.light-theme .hero-content p {
+      color: rgba(0, 0, 0, 0.6);
+    }
+    body.light-theme .btn-primary {
+      background: linear-gradient(135deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.15) 100%);
+      border-color: rgba(0,0,0,0.15);
+      color: #1a1a1a;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    body.light-theme .btn-primary:hover {
+      box-shadow: 0 8px 28px rgba(0,0,0,0.15);
+      border-color: rgba(0,0,0,0.25);
+    }
+    body.light-theme .btn-secondary {
+      border-color: rgba(0,0,0,0.15);
+      color: rgba(0,0,0,0.6);
+    }
+    body.light-theme .btn-secondary:hover {
+      border-color: rgba(0,0,0,0.3);
+      color: #1a1a1a;
+    }
+    body.light-theme .features-title {
+      color: #1a1a1a;
+    }
+    body.light-theme .feature-card {
+      background: rgba(0, 0, 0, 0.02);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+    body.light-theme .feature-card:hover {
+      border-color: rgba(0, 0, 0, 0.15);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+      background: rgba(0, 0, 0, 0.04);
+    }
+    body.light-theme .feature-icon {
+      filter: grayscale(100%) brightness(0.8);
+    }
+    body.light-theme .feature-card h3 {
+      color: #1a1a1a;
+    }
+    body.light-theme .feature-card p {
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    @media (max-width: 768px) {
+      .hero { padding: 50px 24px; }
+      .hero-content h1 { font-size: 40px; }
+      .features { padding: 60px 20px; }
+      .features-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+  <link rel="stylesheet" href="./components/auth-modal.css">
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1 data-i18n="hero-title">О нас</h1>
+      <p data-i18n="hero-desc">Создаём лучший игровой клиент для максимального комфорта и новых впечатлений от игры.</p>
+      <div class="hero-buttons">
+        <a href="shop.html" class="btn-primary" data-i18n="buy-now">Купить сейчас</a>
+        <button class="btn-secondary" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})" data-i18n="learn-more">Подробнее</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <h2 class="features-title" data-i18n="features-title">Наши преимущества</h2>
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">👁</div>
+        <h3 data-i18n="feature-1-title">Красивый внешний вид</h3>
+        <p data-i18n="feature-1-desc">Наш клиент разработан с учётом современных стандартов дизайна. Каждый элемент интерфейса продуман до мелочей, чтобы обеспечить максимальный комфорт во время игры.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">⚙️</div>
+        <h3 data-i18n="feature-2-title">Настраиваемость</h3>
+        <p data-i18n="feature-2-desc">Полный контроль над игровым процессом в ваших руках. Изменяйте интерфейс, создавайте собственные профили настроек, адаптируйте управление под свой стиль игры.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <img src="https://cdn-icons-png.freepik.com/512/12525/12525854.png?ga=GA1.1.942355653.1769970282" alt="Оптимизация" style="width:40px;height:40px;filter:grayscale(1)brightness(1.5)">
+        </div>
+        <h3 data-i18n="feature-3-title">Оптимизация</h3>
+        <p data-i18n="feature-3-desc">Высокая производительность на любом оборудовании — наш приоритет. Клиент использует минимум системных ресурсов, обеспечивая стабильную работу даже на устаревших ПК.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">↻</div>
+        <h3 data-i18n="feature-4-title">Частые обновления</h3>
+        <p data-i18n="feature-4-desc">Постоянное развитие и улучшение — основа нашей работы. Мы выпускаем регулярные обновления, добавляя новые возможности и исправляя недочёты.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <img src="https://cdn-icons-png.freepik.com/512/6610/6610845.png?ga=GA1.1.942355653.1769970282" alt="Поддержка" style="width:40px;height:40px;filter:grayscale(1)brightness(1.5)">
+        </div>
+        <h3 data-i18n="feature-5-title">Лучшая поддержка</h3>
+        <p data-i18n="feature-5-desc">Наша команда всегда готова прийти на помощь. Профессиональная служба поддержки работает круглосуточно, чтобы оперативно решать любые возникающие вопросы.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <div id="footer-placeholder"></div>
+  <div id="support-chat-placeholder"></div>
+  
+  <script src="./components/footer.js"></script>
+  <script src="./components/background.js"></script>
+  <script src="./components/ban-modal.js"></script>
+  <script src="./components/ban-checker.js"></script>
+  <script>
+    // Загружаем чат поддержки
+    fetch('./components/support-chat.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('support-chat-placeholder').innerHTML = html;
+        const script = document.createElement('script');
+        script.src = './components/support-chat.js';
+        document.body.appendChild(script);
+      });
+  </script>
+  <script src="./components/text-animation.js"></script>
+  <script src="./components/3d-cards.js"></script>
+  <script src="./components/notifications.js"></script>
+  <script src="./components/transitions.js"></script>
+  <script src="./components/auth-modal.js"></script>
+
+  <div id="support-chat-placeholder"></div>
+
+  <script>
+    fetch('./components/navbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('navbar').innerHTML = html;
+        setTimeout(() => {
+          const s = document.createElement('script');
+          s.src = './components/navbar.js';
+          document.body.appendChild(s);
+        }, 0);
+      });
+
+    fetch('./components/support-chat.html').then(r=>r.text()).then(h=>{
+      document.getElementById('support-chat-placeholder').innerHTML=h;
+      const s=document.createElement('script');s.src='./components/support-chat.js';document.body.appendChild(s);
+    }).catch(()=>{});
+  </script>
+</body>
+</html>

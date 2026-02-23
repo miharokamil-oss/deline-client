@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zenex — Авторизация</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./components/navbar.css">
+  <link rel="stylesheet" href="./components/footer.css">
+  <link rel="stylesheet" href="./components/background.css">
+  <link rel="stylesheet" href="./components/light-theme.css">
+  <link rel="stylesheet" href="./components/input-optimization.css">
+  <link rel="stylesheet" href="./components/support-chat.css">
+  <link rel="stylesheet" href="./components/toast.css">
+  <link rel="stylesheet" href="./components/ban-modal.css">
+  <script src="./components/theme.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script src="./components/i18n.js"></script>
+
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html, body { min-height:100%; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      padding-top: 100px;
+    }
+
+    .auth-wrap {
+      display: flex; justify-content: center; align-items: center;
+      min-height: calc(100vh - 100px);
+      padding: 40px 20px;
+    }
+
+    /* ── карточка ── */
+    .auth-card {
+      width: 100%; max-width: 420px;
+      background: rgba(32,34,40,0.97);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 40px 36px 36px;
+      box-shadow: 0 16px 56px rgba(0,0,0,0.55);
+      position: relative; overflow: hidden;
+      transition: max-width 0.4s ease;
+    }
+    .auth-card.narrow {
+      max-width: 380px;
+    }
+    .auth-card::before {
+      content:''; position:absolute; top:0; left:0; right:0;
+      height:2px; background:rgba(255,255,255,0.07);
+    }
+
+    .auth-icon {
+      width:60px; height:60px; margin:0 auto 20px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:50%; display:flex; align-items:center;
+      justify-content:center; font-size:26px;
+    }
+    .auth-title {
+      font-size:22px; font-weight:700; text-align:center;
+      color:#fff; margin-bottom:6px; letter-spacing:0.02em;
+    }
+    .auth-subtitle {
+      font-size:13px; color:rgba(255,255,255,0.4);
+      text-align:center; margin-bottom:8px; line-height:1.6;
+    }
+
+    /* ── прогресс-полоски ── */
+    .pbars { display:flex; gap:8px; justify-content:center; margin-bottom:22px; align-items:center; }
+    .pbar {
+      height:3px; width:40px; border-radius:99px;
+      background:rgba(255,255,255,0.14);
+      transition: background .5s ease, box-shadow .5s ease;
+    }
+    .pbar.lit { background:#fff; box-shadow:0 0 6px rgba(255,255,255,0.3); }
+
+    /* ── сообщения ── */
+    .msg {
+      border-radius:10px; padding:11px 14px; margin-bottom:16px;
+      font-size:13px; font-weight:600; text-align:center;
+      animation: msgIn .3s ease;
+    }
+    @keyframes msgIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
+    .msg.err { background:rgba(220,50,50,.12); border:1px solid rgba(220,50,50,.28); color:rgba(255,110,110,.95); }
+    .msg.ok  { background:rgba(40,180,90,.1);  border:1px solid rgba(40,180,90,.28);  color:rgba(80,210,120,.95); }
+    .hidden  { display:none !important; }
+
+    /* ── жёлтая плашка ── */
+    .info-box {
+      background:rgba(200,150,50,.1); border:1px solid rgba(200,150,50,.25);
+      border-radius:10px; padding:11px 14px; margin-bottom:18px;
+      font-size:13px; color:rgba(255,200,100,.9); text-align:center; line-height:1.5;
+    }
+    .info-box strong { color:#ffd97a; }
+
+    /* ── поля ── */
+    .fg { margin-bottom:15px; }
+    .fg label {
+      display:block; font-size:12px; font-weight:600;
+      letter-spacing:0.05em; color:rgba(255,255,255,0.45); margin-bottom:7px;
+    }
+    .fg input {
+      width:100%;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:10px; padding:13px 15px;
+      color:#fff; font-family:'Rajdhani',sans-serif;
+      font-size:15px; font-weight:500; outline:none;
+      transition: border-color .25s, background .25s, box-shadow .25s;
+    }
+    .fg input::placeholder { color:rgba(255,255,255,0.18); }
+    .fg input:focus {
+      border-color:rgba(255,255,255,0.28);
+      background:rgba(255,255,255,0.07);
+      box-shadow:0 0 0 3px rgba(255,255,255,0.05);
+    }
+    .fg input.invalid { border-color:rgba(220,50,50,0.5); }
+
+    .pw-wrap { position:relative; }
+    .pw-wrap input { padding-right:44px; }
+    .eye {
+      position:absolute; right:13px; top:50%; transform:translateY(-50%);
+      background:none; border:none; cursor:pointer;
+      color:rgba(255,255,255,0.3); font-size:15px; line-height:1; transition:color .2s;
+    }
+    .eye:hover { color:rgba(255,255,255,.7); }
+
+    .forgot { text-align:right; margin-top:-6px; margin-bottom:16px; }
+    .forgot a { font-size:13px; color:rgba(255,255,255,0.4); text-decoration:none; transition:color .2s; }
+    .forgot a:hover { color:rgba(255,255,255,.75); }
+
+    /* ── turnstile ── */
+    .ts-wrap { margin:16px 0; display:flex; justify-content:center; min-height:65px; }
+
+    /* ── кнопки ── */
+    .btn {
+      width:100%;
+      background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.13);
+      border-radius:12px; color:#fff; padding:15px;
+      font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700;
+      letter-spacing:0.06em; cursor:pointer; position:relative; overflow:hidden;
+      transition: background .3s, transform .2s, border-color .3s;
+    }
+    .btn::after {
+      content:''; position:absolute; top:0; left:-100%;
+      width:100%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
+      transition:left .5s;
+    }
+    .btn:hover::after { left:100%; }
+    .btn:hover { background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.2); transform:translateY(-1px); }
+    .btn:active { transform:translateY(0); }
+    .btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+    .btn-back {
+      background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.07);
+      color:rgba(255,255,255,.55); margin-bottom:10px;
+    }
+    .btn-back:hover { background:rgba(255,255,255,.08); transform:none; }
+
+    .auth-link { text-align:center; margin-top:18px; font-size:14px; color:rgba(255,255,255,.4); }
+    .auth-link a {
+      color:rgba(255,255,255,.75); font-weight:700;
+      text-decoration:none; border-bottom:1px solid rgba(255,255,255,.2);
+      transition:color .2s, border-color .2s;
+    }
+    .auth-link a:hover { color:#fff; border-color:rgba(255,255,255,.5); }
+
+    /* ── код ── */
+    .code-row { display:flex; gap:10px; justify-content:center; margin:20px 0; }
+    .ci {
+      width:46px; height:52px; text-align:center;
+      font-size:22px; font-weight:700;
+      background:rgba(255,255,255,.05); border:1.5px solid rgba(255,255,255,.1);
+      border-radius:10px; color:#fff; outline:none;
+      font-family:'Rajdhani',sans-serif; transition:border-color .2s, box-shadow .2s;
+    }
+    .ci:focus { border-color:rgba(255,255,255,.4); box-shadow:0 0 0 3px rgba(255,255,255,.07); }
+    .ci.has   { border-color:rgba(255,255,255,.28); }
+
+    /* ── таймер ── */
+    .resend { text-align:center; font-size:13px; color:rgba(255,255,255,.4); margin:12px 0 4px; }
+    .resend-btn {
+      background:none; border:none; cursor:pointer;
+      color:rgba(255,255,255,.7); font-size:13px;
+      font-family:'Rajdhani',sans-serif; font-weight:600;
+      text-decoration:underline; display:none; transition:color .2s;
+    }
+    .resend-btn:hover { color:#fff; }
+
+    /* ── анимации ── */
+    .auth-card {
+      transition: max-width 0.4s ease;
+    }
+    
+    .fg, .btn, .auth-link, .info-box, .code-row, .resend, .pbars, .msg {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    @keyframes fadeOut { 
+      from { opacity:1; transform:scale(1); } 
+      to { opacity:0; transform:scale(0.95); } 
+    }
+    @keyframes fadeIn { 
+      from { opacity:0; transform:scale(0.95) translateY(10px); } 
+      to { opacity:1; transform:scale(1) translateY(0); } 
+    }
+    .anim-in, .anim-back-in { 
+      animation: fadeIn .5s cubic-bezier(.4,0,.2,1) both; 
+    }
+    .anim-out { 
+      animation: fadeOut .3s cubic-bezier(.4,0,.2,1) both; 
+    }
+
+    /* ── светлая тема ── */
+    body.light-theme {
+      color: #1a1a1a;
+    }
+    body.light-theme .auth-card {
+      background: rgba(255,255,255,0.95);
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 16px 56px rgba(0,0,0,0.15);
+    }
+    body.light-theme .auth-card::before {
+      background: rgba(0,0,0,0.05);
+    }
+    body.light-theme .auth-icon {
+      background: rgba(0,0,0,0.04);
+      border-color: rgba(0,0,0,0.08);
+    }
+    body.light-theme .auth-title {
+      color: #1a1a1a;
+    }
+    body.light-theme .auth-subtitle {
+      color: rgba(0,0,0,0.5);
+    }
+    body.light-theme .pbar {
+      background: rgba(0,0,0,0.1);
+    }
+    body.light-theme .pbar.lit {
+      background: #1a1a1a;
+      box-shadow: 0 0 6px rgba(0,0,0,0.2);
+    }
+    body.light-theme .msg.err {
+      background: rgba(220,50,50,.08);
+      border-color: rgba(220,50,50,.2);
+      color: rgba(180,30,30,.95);
+    }
+    body.light-theme .msg.ok {
+      background: rgba(40,180,90,.08);
+      border-color: rgba(40,180,90,.2);
+      color: rgba(30,140,70,.95);
+    }
+    body.light-theme .info-box {
+      background: rgba(200,150,50,.08);
+      border-color: rgba(200,150,50,.2);
+      color: rgba(140,100,30,.9);
+    }
+    body.light-theme .info-box strong {
+      color: #8b6914;
+    }
+    body.light-theme .fg label {
+      color: rgba(0,0,0,0.6);
+    }
+    body.light-theme .fg input {
+      background: rgba(0,0,0,0.03);
+      border-color: rgba(0,0,0,0.12);
+      color: #1a1a1a;
+    }
+    body.light-theme .fg input::placeholder {
+      color: rgba(0,0,0,0.25);
+    }
+    body.light-theme .fg input:focus {
+      border-color: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.05);
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+    }
+    body.light-theme .fg input.invalid {
+      border-color: rgba(220,50,50,0.4);
+    }
+    body.light-theme .eye {
+      color: rgba(0,0,0,0.4);
+    }
+    body.light-theme .eye:hover {
+      color: rgba(0,0,0,0.7);
+    }
+    body.light-theme .forgot a {
+      color: rgba(0,0,0,0.5);
+    }
+    body.light-theme .forgot a:hover {
+      color: rgba(0,0,0,0.8);
+    }
+    body.light-theme .btn {
+      background: rgba(0,0,0,0.08);
+      border-color: rgba(0,0,0,0.12);
+      color: #1a1a1a;
+    }
+    body.light-theme .btn::after {
+      background: linear-gradient(90deg,transparent,rgba(0,0,0,.05),transparent);
+    }
+    body.light-theme .btn:hover {
+      background: rgba(0,0,0,0.12);
+      border-color: rgba(0,0,0,0.18);
+    }
+    body.light-theme .btn-back {
+      background: rgba(0,0,0,0.02);
+      border-color: rgba(0,0,0,0.06);
+      color: rgba(0,0,0,0.6);
+    }
+    body.light-theme .btn-back:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    body.light-theme .auth-link {
+      color: rgba(0,0,0,0.5);
+    }
+    body.light-theme .auth-link a {
+      color: rgba(0,0,0,0.8);
+      border-color: rgba(0,0,0,0.3);
+    }
+    body.light-theme .auth-link a:hover {
+      color: #1a1a1a;
+      border-color: rgba(0,0,0,0.5);
+    }
+    body.light-theme .ci {
+      background: rgba(0,0,0,0.03);
+      border-color: rgba(0,0,0,0.12);
+      color: #1a1a1a;
+    }
+    body.light-theme .ci:focus {
+      border-color: rgba(0,0,0,0.35);
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    }
+    body.light-theme .ci.has {
+      border-color: rgba(0,0,0,0.3);
+    }
+    body.light-theme .resend {
+      color: rgba(0,0,0,0.5);
+    }
+    body.light-theme .resend-btn {
+      color: rgba(0,0,0,0.7);
+    }
+    body.light-theme .resend-btn:hover {
+      color: #1a1a1a;
+    }
+
+    @media (max-width:480px) {
+      .auth-card { padding:30px 20px 28px; }
+      .ci { width:40px; height:46px; font-size:19px; }
+      .code-row { gap:7px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="navbar"></div>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+
+    <div class="auth-icon" id="cardIcon">🔐</div>
+    <h2 class="auth-title" id="cardTitle" data-i18n="auth-title">Zenex</h2>
+    <p class="auth-subtitle" id="cardSub" data-i18n="auth-subtitle">Твой персональный чит-клиент. Войди и начни.</p>
+
+    <div class="pbars hidden" id="pbars">
+      <div class="pbar lit" id="pb1"></div>
+      <div class="pbar"     id="pb2"></div>
+    </div>
+
+    <!-- ════ LOGIN ════ -->
+    <div id="vLogin" class="anim-in">
+      <div id="loginMsg" class="msg hidden"></div>
+
+      <div class="fg">
+        <label data-i18n="email-label">Электронная почта</label>
+        <input type="email" id="loginEmail" placeholder="example@mail.com" autocomplete="email">
+      </div>
+
+      <div class="fg">
+        <label data-i18n="password-label">Пароль</label>
+        <div class="pw-wrap">
+          <input type="password" id="loginPw" data-i18n-placeholder="password-placeholder" placeholder="Введите пароль" autocomplete="current-password">
+          <button type="button" class="eye" onclick="eyeToggle('loginPw',this)">👁</button>
+        </div>
+      </div>
+
+      <div class="forgot"><a href="#" onclick="return false" data-i18n="forgot-password">Забыли пароль?</a></div>
+
+      <div class="ts-wrap">
+        <div class="cf-turnstile" id="tsLoginWidget"
+             data-sitekey="0x4AAAAAACWd-naYvm0t4Ju8"
+             data-theme="dark"
+             data-callback="onLoginTS"></div>
+      </div>
+
+      <button class="btn" id="loginBtn" onclick="doLogin()" data-i18n="login-btn">Войти</button>
+
+      <div class="auth-link">
+        <span data-i18n="no-account">Нет аккаунта?</span> <a href="#" onclick="event.preventDefault(); goTo('reg1')" data-i18n="register-link">Зарегистрироваться</a>
+      </div>
+    </div>
+
+    <!-- ════ REG step 1 ════ -->
+    <div id="vReg1" class="hidden">
+      <div id="reg1Msg" class="msg hidden"></div>
+
+      <div class="info-box">
+        Мы отправим код подтверждения на<br>
+        <strong id="emailHint">example@mail.com</strong>
+      </div>
+
+      <div class="fg">
+        <label>Никнейм</label>
+        <input type="text" id="regUsername" placeholder="your_nickname" autocomplete="off" maxlength="32">
+      </div>
+
+      <div class="fg">
+        <label>Электронная почта</label>
+        <input type="email" id="regEmail" placeholder="example@mail.com" autocomplete="email"
+               oninput="document.getElementById('emailHint').textContent=this.value||'example@mail.com'">
+      </div>
+
+      <div class="fg">
+        <label>Пароль</label>
+        <div class="pw-wrap">
+          <input type="password" id="regPw" placeholder="Минимум 6 символов" autocomplete="new-password">
+          <button type="button" class="eye" onclick="eyeToggle('regPw',this)">👁</button>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>Подтвердите пароль</label>
+        <div class="pw-wrap">
+          <input type="password" id="regPw2" placeholder="Повторите пароль" autocomplete="new-password">
+          <button type="button" class="eye" onclick="eyeToggle('regPw2',this)">👁</button>
+        </div>
+      </div>
+
+      <div class="ts-wrap">
+        <div class="cf-turnstile" id="tsRegWidget"
+             data-sitekey="0x4AAAAAACWd-naYvm0t4Ju8"
+             data-theme="dark"
+             data-callback="onRegTS"></div>
+      </div>
+
+      <button class="btn" id="reg1Btn" onclick="doReg1()">Зарегистрироваться</button>
+
+      <div class="auth-link">
+        Уже есть аккаунт? <a href="#" onclick="event.preventDefault(); goTo('login')">Войти</a>
+      </div>
+    </div>
+
+    <!-- ════ REG step 2 (код) ════ -->
+    <div id="vReg2" class="hidden">
+      <div id="reg2Msg" class="msg hidden"></div>
+
+      <div class="info-box">
+        Если письмо не пришло — проверьте папку «Спам»
+      </div>
+
+      <p style="text-align:center;font-size:13px;color:rgba(255,255,255,.45);margin-bottom:2px;">
+        Код отправлен на <strong style="color:rgba(255,255,255,.75)" id="sentTo">—</strong>
+      </p>
+
+      <div class="code-row">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="c1" oninput="cn(this,'c2')" onkeydown="cb(event,'c1',null)">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="c2" oninput="cn(this,'c3')" onkeydown="cb(event,'c2','c1')">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="c3" oninput="cn(this,'c4')" onkeydown="cb(event,'c3','c2')">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="c4" oninput="cn(this,'c5')" onkeydown="cb(event,'c4','c3')">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="c5" oninput="cn(this,'c6')" onkeydown="cb(event,'c5','c4')">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="c6" oninput="cn(this,null)" onkeydown="cb(event,'c6','c5')">
+      </div>
+
+      <div class="resend" id="resendWrap">
+        Отправить повторно через <span id="timerSec">60</span> сек
+        <button class="resend-btn" id="resendBtn" onclick="resendCode()">Отправить снова</button>
+      </div>
+
+      <button class="btn btn-back" onclick="goBack()">← Назад</button>
+      <button class="btn" id="reg2Btn" onclick="doReg2()">Подтвердить</button>
+
+      <div class="auth-link">
+        Уже есть аккаунт? <a href="#" onclick="event.preventDefault(); goTo('login')">Войти</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="footer-placeholder"></div>
+<script src="./components/footer.js"></script>
+<script src="./components/background.js"></script>
+<script src="./components/text-animation.js"></script>
+<script src="./components/3d-cards.js"></script>
+<script src="./components/notifications.js"></script>
+<script src="./components/transitions.js"></script>
+
+<script src="./components/toast.js"></script>
+<script src="./components/ban-modal.js"></script>
+<script src="./components/ban-checker.js"></script>
+
+<script>
+  /* ─── KEYS ─── */
+  const EJS_PK      = '6KkqFapKX2_cg00Og';
+  const EJS_SVC     = 'service_vpw7xye';
+  const EJS_VERIFY  = 'template_ncbjni9';   // Password Reset template — для кода верификации
+  const EJS_WELCOME = 'template_ueykvki';   // Welcome template
+  // emailjs init happens via the SDK automatically when public key is passed to send()
+
+  const SB_URL = 'https://xlruthqgapbgxfowavln.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhscnV0aHFnYXBiZ3hmb3dhdmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTY2MjMsImV4cCI6MjA4NTI3MjYyM30.dwBTGOPGgEb2Qg3ZaK8Q8XJjx64gdHQy48r_pnLxPic';
+  let db = null;
+  try { db = window.supabase.createClient(SB_URL, SB_KEY); } catch(e) {}
+
+  /* ─── NAVBAR ─── */
+  fetch('./components/navbar.html').then(r=>r.text()).then(h=>{
+    document.getElementById('navbar').innerHTML = h;
+    setTimeout(()=>{
+      const s = document.createElement('script');
+      s.src = './components/navbar.js';
+      document.body.appendChild(s);
+    }, 0);
+  });
+  window.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('currentUser')) location.href = 'profile.html';
+    
+    // Применяем сохраненную тему СРАЗУ
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-theme');
+    }
+  });
+
+  // Применяем тему еще раньше - до DOMContentLoaded
+  (function() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-theme');
+    }
+  })();
+
+  /* ─── TURNSTILE ─── */
+  let tsLogin = null, tsReg = null;
+  window.onLoginTS = t => { tsLogin = t; };
+  window.onRegTS   = t => { tsReg = t; };
+
+  /* ─── HELPERS ─── */
+  async function sha256(s) {
+    const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(s));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  function showMsg(id, txt, isErr=true) {
+    const el = document.getElementById(id);
+    el.textContent = txt;
+    el.className = 'msg ' + (isErr ? 'err' : 'ok');
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 5000);
+  }
+
+  function eyeToggle(id, btn) {
+    const i = document.getElementById(id);
+    i.type = i.type === 'password' ? 'text' : 'password';
+    btn.textContent = i.type === 'password' ? '👁' : '🙈';
+  }
+
+  function setBtn(id, txt, dis) {
+    const b = document.getElementById(id);
+    b.textContent = txt; b.disabled = dis;
+  }
+
+  /* ─── VIEW SWITCHER ─── */
+  const VIEWS = { login:'vLogin', reg1:'vReg1', reg2:'vReg2' };
+  const META  = {
+    login: { icon:'🔐', title:'Zenex',       sub:'Твой персональный чит-клиент. Войди и начни.', bars:false, narrow:false },
+    reg1:  { icon:'📧', title:'Регистрация', sub:'Создайте свой аккаунт',                        bars:true,  narrow:true  },
+    reg2:  { icon:'🔑', title:'Регистрация', sub:'Подтвердите почту',                            bars:true,  narrow:true  },
+  };
+  let curView = 'login';
+
+  function goTo(name, reverse=false) {
+    if (name === curView) return;
+    const oldEl = document.getElementById(VIEWS[curView]);
+    const newEl = document.getElementById(VIEWS[name]);
+    const meta  = META[name];
+
+    // Получаем все элементы для анимации
+    const oldElements = oldEl.querySelectorAll('.fg, .btn, .auth-link, .info-box, .code-row, .resend, .msg:not(.hidden), .ts-wrap');
+    
+    // Анимация исчезновения элементов по очереди
+    oldElements.forEach((el, index) => {
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-15px)';
+      }, index * 30);
+    });
+
+    // Скрываем весь контейнер после исчезновения элементов
+    setTimeout(() => {
+      oldEl.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      oldEl.style.opacity = '0';
+      oldEl.style.transform = 'scale(0.95)';
+      
+      setTimeout(() => {
+        // Скрываем старый элемент
+        oldEl.classList.add('hidden');
+        
+        // Сбрасываем стили
+        oldEl.style.opacity = '';
+        oldEl.style.transform = '';
+        oldEl.style.transition = '';
+        oldElements.forEach(el => {
+          el.style.opacity = '';
+          el.style.transform = '';
+          el.style.transition = '';
+        });
+
+        // Обновляем метаданные
+        document.getElementById('cardIcon').textContent = meta.icon;
+        document.getElementById('cardTitle').textContent = meta.title;
+        document.getElementById('cardSub').textContent = meta.sub;
+
+        const cardEl = document.querySelector('.auth-card');
+        if (meta.narrow) {
+          cardEl.classList.add('narrow');
+        } else {
+          cardEl.classList.remove('narrow');
+        }
+
+        const pbarsEl = document.getElementById('pbars');
+        if (meta.bars) {
+          pbarsEl.classList.remove('hidden');
+          if (name === 'reg1') {
+            document.getElementById('pb1').classList.add('lit');
+            document.getElementById('pb2').classList.remove('lit');
+          } else if (name === 'reg2') {
+            document.getElementById('pb1').classList.add('lit');
+            document.getElementById('pb2').classList.add('lit');
+          }
+        } else {
+          pbarsEl.classList.add('hidden');
+        }
+
+        // Показываем новый элемент
+        newEl.classList.remove('hidden');
+        newEl.style.opacity = '0';
+        newEl.style.transform = 'scale(0.95)';
+        
+        // Анимация появления контейнера
+        setTimeout(() => {
+          newEl.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          newEl.style.opacity = '1';
+          newEl.style.transform = 'scale(1)';
+          
+          // Получаем новые элементы для анимации
+          const newElements = newEl.querySelectorAll('.fg, .btn, .auth-link, .info-box, .code-row, .resend, .msg:not(.hidden), .ts-wrap');
+          
+          // Подготавливаем элементы к анимации
+          newElements.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+          });
+          
+          // Анимация появления элементов по очереди
+          setTimeout(() => {
+            newElements.forEach((el, index) => {
+              setTimeout(() => {
+                el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+              }, index * 60);
+            });
+            
+            // Очистка стилей после завершения анимации
+            setTimeout(() => {
+              newEl.style.opacity = '';
+              newEl.style.transform = '';
+              newEl.style.transition = '';
+              newElements.forEach(el => {
+                el.style.opacity = '';
+                el.style.transform = '';
+                el.style.transition = '';
+              });
+            }, newElements.length * 60 + 400);
+            
+          }, 100);
+          
+        }, 50);
+        
+        curView = name;
+      }, 400);
+      
+    }, oldElements.length * 30 + 100);
+  }
+
+  /* ─── LOGIN ─── */
+  async function doLogin() {
+    if (!db) { showMsg('loginMsg', 'База данных недоступна'); return; }
+  if (!tsLogin) { showMsg('loginMsg', 'Пройдите проверку Cloudflare'); return; }
+
+    const emailOrUsername = document.getElementById('loginEmail').value.trim();
+    const pw    = document.getElementById('loginPw').value;
+    if (!emailOrUsername || !pw) { showMsg('loginMsg', 'Заполните все поля'); return; }
+
+    setBtn('loginBtn', 'Вход...', true);
+    try {
+      if (emailOrUsername === 'admin@zenex.com' && pw === 'bro_plat') {
+        localStorage.setItem('currentUser', JSON.stringify({
+          uid:1, username:'admin', email:'admin@zenex.com', is_admin:true, subscription:'lifetime'
+        }));
+        toast.success('Добро пожаловать, Администратор!');
+        setTimeout(() => location.href = 'profile.html', 1600);
+        return;
+      }
+
+      // Проверяем по email или username
+      let query = db.from('users').select('*');
+      if (emailOrUsername.includes('@')) {
+        query = query.eq('email', emailOrUsername);
+      } else {
+        query = query.eq('username', emailOrUsername);
+      }
+      
+      const { data, error } = await query.single();
+      if (error || !data) {
+        showMsg('loginMsg', 'Пользователь не найден');
+        tsLogin = null; if (window.turnstile) window.turnstile.reset('#tsLoginWidget');
+        return;
+      }
+      if (await sha256(pw) === data.password) {
+        // Проверяем статус бана
+        if(data.ban && data.ban_until) {
+          const banUntil = new Date(data.ban_until).getTime();
+          const now = new Date().getTime();
+          
+          if(banUntil > now) {
+            // Пользователь забанен
+            showMsg('loginMsg', 'Ваш аккаунт забанен');
+            tsLogin = null; if (window.turnstile) window.turnstile.reset('#tsLoginWidget');
+            setBtn('loginBtn', 'Вход', false);
+            return;
+          }
+        }
+
+        localStorage.setItem('currentUser', JSON.stringify(data));
+        
+        // Логируем вход
+        try {
+          await db.from('activity_log').insert({
+            username: data.username,
+            action_type: 'login',
+            title: 'Вход в систему',
+            description: 'Успешная авторизация',
+            icon: 'right-to-bracket'
+          });
+        } catch(e) { console.log('Activity log error:', e); }
+        
+        toast.success('Добро пожаловать, ' + data.username + '!');
+        setTimeout(() => location.href = 'profile.html', 1600);
+      } else {
+        toast.error('Неверный пароль');
+        tsLogin = null; if (window.turnstile) window.turnstile.reset('#tsLoginWidget');
+      }
+    } catch(e) {
+      showMsg('loginMsg', 'Ошибка: ' + e.message);
+    } finally {
+      setBtn('loginBtn', 'Войти', false);
+    }
+  }
+
+  /* ─── REGISTER step 1 ─── */
+  let regEmail = null, regUsername = null, regPwSaved = null, pendingCode = null;
+
+  async function doReg1() {
+    if (!db) { showMsg('reg1Msg', 'База данных недоступна'); return; }
+    if (!tsReg) { showMsg('reg1Msg', 'Пройдите проверку Cloudflare'); return; }
+
+    const username = document.getElementById('regUsername').value.trim();
+    const email    = document.getElementById('regEmail').value.trim();
+    const pw       = document.getElementById('regPw').value;
+    const pw2      = document.getElementById('regPw2').value;
+
+    // Валидация
+    if (!username) { showMsg('reg1Msg', 'Введите никнейм'); return; }
+    if (username.length < 3) { showMsg('reg1Msg', 'Никнейм должен быть не менее 3 символов'); return; }
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) { showMsg('reg1Msg', 'Никнейм: только буквы, цифры и _'); return; }
+    if (!email) { showMsg('reg1Msg', 'Введите электронную почту'); return; }
+    if (!pw || pw.length < 6) { showMsg('reg1Msg', 'Пароль должен быть не менее 6 символов'); return; }
+    if (pw !== pw2) { showMsg('reg1Msg', 'Пароли не совпадают'); return; }
+
+    setBtn('reg1Btn', 'Проверка...', true);
+    try {
+      // Проверка дубля email
+      const { data: exEmail } = await db.from('users').select('email').eq('email', email).maybeSingle();
+      if (exEmail) {
+        showMsg('reg1Msg', '⚠️ Эта почта уже зарегистрирована');
+        tsReg = null; if (window.turnstile) window.turnstile.reset('#tsRegWidget');
+        return;
+      }
+
+      // Проверка дубля никнейма
+      const { data: exUser } = await db.from('users').select('username').eq('username', username).maybeSingle();
+      if (exUser) {
+        showMsg('reg1Msg', '⚠️ Этот никнейм уже занят');
+        tsReg = null; if (window.turnstile) window.turnstile.reset('#tsRegWidget');
+        return;
+      }
+
+      regEmail    = email;
+      regUsername = username;
+      regPwSaved  = pw;
+      pendingCode = String(Math.floor(100000 + Math.random() * 900000));
+      console.log('[DEV] Код:', pendingCode);
+
+      setBtn('reg1Btn', 'Отправка...', true);
+      const _r1 = await emailjs.send(EJS_SVC, EJS_VERIFY, {
+        to_email:          email,
+        verification_code: pendingCode,
+        user_email:        email,
+        username:          username
+      }, EJS_PK);
+      console.log('[EmailJS verify]', _r1);
+
+      document.getElementById('sentTo').textContent = email;
+      showMsg('reg1Msg', 'Код отправлен на ' + email, false);
+      setTimeout(() => { goTo('reg2'); startTimer(); document.getElementById('c1').focus(); }, 700);
+
+    } catch(e) {
+      console.error(e);
+      showMsg('reg1Msg', 'Ошибка отправки: ' + (e.text || e.message || JSON.stringify(e)));
+      tsReg = null; if (window.turnstile) window.turnstile.reset('#tsRegWidget');
+    } finally {
+      setBtn('reg1Btn', 'Зарегистрироваться', false);
+    }
+  }
+
+  /* ─── REGISTER step 2 ─── */
+  async function doReg2() {
+    if (!db) { showMsg('reg2Msg', 'База данных недоступна'); return; }
+
+    const code = ['c1','c2','c3','c4','c5','c6'].map(i => document.getElementById(i).value).join('');
+    if (code.length < 6) { showMsg('reg2Msg', 'Введите все 6 цифр'); return; }
+    if (code !== pendingCode) {
+      showMsg('reg2Msg', 'Неверный код');
+      clearCode(); document.getElementById('c1').focus(); return;
+    }
+
+    setBtn('reg2Btn', 'Создаём аккаунт...', true);
+    try {
+      const { data: maxRow } = await db.from('users').select('uid').order('uid', {ascending:false}).limit(1);
+      const maxUid = maxRow?.length ? maxRow[0].uid : 0;
+
+      const { data: newUser, error } = await db.from('users').insert([{
+        uid:             maxUid + 1,
+        username:        regUsername,
+        password:        await sha256(regPwSaved),
+        email:           regEmail,
+        is_admin:        false,
+        subscription:    'none',
+        hwid:            null,
+        subscription_end: null
+      }]).select().single();
+
+      if (error) { showMsg('reg2Msg', 'Ошибка: ' + error.message); return; }
+
+      // Welcome email
+      try {
+        await emailjs.send(EJS_SVC, EJS_WELCOME, { to_email: regEmail, username: regUsername }, EJS_PK);
+      } catch(we) { console.warn('welcome email:', we); }
+
+      localStorage.setItem('currentUser', JSON.stringify(newUser));
+      toast.success('🎉 Аккаунт успешно создан!');
+      stopTimer();
+      setTimeout(() => location.href = 'profile.html', 1600);
+
+    } catch(e) {
+      toast.error('Ошибка: ' + e.message);
+    } finally {
+      setBtn('reg2Btn', 'Подтвердить', false);
+    }
+  }
+
+  /* ─── BACK ─── */
+  function goBack() {
+    clearCode(); stopTimer(); pendingCode = null;
+    goTo('reg1', true);
+  }
+
+  /* ─── CODE INPUT ─── */
+  function cn(el, nextId) {
+    el.value = el.value.replace(/\D/g,'');
+    el.classList.toggle('has', !!el.value);
+    if (el.value && nextId) document.getElementById(nextId).focus();
+  }
+  function cb(e, curId, prevId) {
+    const cur = document.getElementById(curId);
+    if (e.key === 'Backspace' && !cur.value && prevId) {
+      e.preventDefault(); document.getElementById(prevId).focus();
+    }
+  }
+  function clearCode() {
+    ['c1','c2','c3','c4','c5','c6'].forEach(i => {
+      const el = document.getElementById(i);
+      el.value = ''; el.classList.remove('has');
+    });
+  }
+
+  /* ─── TIMER ─── */
+  let timerInt = null;
+  function startTimer() {
+    let s = 60;
+    const wrap = document.getElementById('resendWrap');
+    wrap.innerHTML = 'Отправить повторно через <span id="timerSec">' + s + '</span> сек ' +
+                     '<button class="resend-btn" id="resendBtn" onclick="resendCode()">Отправить снова</button>';
+    stopTimer();
+    timerInt = setInterval(() => {
+      s--;
+      const el = document.getElementById('timerSec');
+      const btn = document.getElementById('resendBtn');
+      if (el) el.textContent = s;
+      if (s <= 0) {
+        stopTimer();
+        const wrap2 = document.getElementById('resendWrap');
+        if (wrap2) wrap2.firstChild.textContent = '';
+        if (el) el.textContent = '';
+        if (btn) btn.style.display = 'inline';
+      }
+    }, 1000);
+  }
+  function stopTimer() { clearInterval(timerInt); }
+
+  async function resendCode() {
+    if (!regEmail) return;
+    pendingCode = String(Math.floor(100000 + Math.random() * 900000));
+    try {
+      await emailjs.send(EJS_SVC, EJS_VERIFY, {
+        to_email: regEmail, verification_code: pendingCode, user_email: regEmail
+      }, EJS_PK);
+      showMsg('reg2Msg', 'Новый код отправлен!', false);
+      startTimer();
+    } catch(e) {
+      showMsg('reg2Msg', 'Ошибка: ' + (e.text || e.message));
+    }
+  }
+
+  /* ─── ENTER ─── */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (curView === 'login') doLogin();
+    else if (curView === 'reg1') doReg1();
+    else if (curView === 'reg2') doReg2();
+  });
+</script>
+
+<div id="support-chat-placeholder"></div>
+<script>
+  fetch('./components/support-chat.html').then(r=>r.text()).then(h=>{
+    document.getElementById('support-chat-placeholder').innerHTML=h;
+    const s=document.createElement('script');s.src='./components/support-chat.js';document.body.appendChild(s);
+  }).catch(()=>{});
+</script>
+</body>
+</html>

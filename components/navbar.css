@@ -1,0 +1,427 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap");
+
+/* ── Navbar ── */
+.navbar {
+  position: fixed;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 1400px;
+  height: 72px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(18, 18, 22, 0.6);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 18px;
+  z-index: 1000;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 8px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ── Logo ── */
+.nav-logo {
+  position: absolute;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+}
+.nav-logo:hover { transform: scale(1.05); }
+.nav-logo img {
+  height: 56px !important;
+  width: 56px !important;
+  object-fit: contain !important;
+}
+
+/* ── Brand ── */
+.navbar-brand {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #d0d0d8;
+  text-decoration: none;
+  margin-left: 4px;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.navbar-brand:hover {
+  color: #ffffff;
+  text-shadow: 0 0 18px rgba(200, 200, 220, 0.4);
+}
+
+/* ── Right ── */
+.navbar-right {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ── Primary button ── */
+.nav-btn {
+  position: relative;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-decoration: none;
+  padding: 9px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(120,120,140,0.2) 0%, rgba(80,80,100,0.55) 60%, rgba(60,60,80,0.7) 100%);
+  border: 1px solid rgba(180, 180, 200, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 2px 12px rgba(0,0,0,0.3);
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+.nav-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.06) 100%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.nav-btn:hover {
+  border-color: rgba(200, 200, 220, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 4px 20px rgba(0,0,0,0.4),
+    0 0 0 1px rgba(180,180,200,0.12);
+  color: #fff;
+}
+.nav-btn:hover::before { opacity: 1; }
+.nav-btn:active { transform: translateY(0) scale(0.98); }
+
+/* ── Ghost buttons (профиль / админ) ── */
+#profileNavBtn,
+#adminPanelBtn {
+  background: transparent;
+  border: 1px solid transparent;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 9px 18px;
+  position: static;
+}
+#profileNavBtn:hover,
+#adminPanelBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: none;
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* ── Language selector ── */
+.lang-wrap { position: relative; }
+
+.lang-trigger {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px 8px 11px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 14px;
+  transition: all 0.22s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.25);
+  user-select: none;
+}
+.lang-trigger:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 18px rgba(0,0,0,0.3);
+}
+.lang-trigger.open {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* 文A icon */
+.lang-icon {
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(200, 200, 220, 0.8);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.lang-current-flag { font-size: 16px; line-height: 1; }
+
+.lang-chevron {
+  color: rgba(255, 255, 255, 0.35);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
+  flex-shrink: 0;
+}
+.lang-trigger.open .lang-chevron {
+  transform: rotate(180deg);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Dropdown ── */
+.lang-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 170px;
+  z-index: 2000;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+  pointer-events: none;
+  transition:
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.lang-dropdown.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+.lang-dropdown-inner {
+  background: rgba(18, 18, 24, 0.95);
+  backdrop-filter: blur(32px) saturate(140%);
+  -webkit-backdrop-filter: blur(32px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 16px 48px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  position: relative;
+}
+.lang-option:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(2px);
+}
+.lang-option:hover .lang-opt-name { color: #fff; }
+
+.lang-opt-flag { font-size: 18px; line-height: 1; flex-shrink: 0; }
+.lang-opt-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  flex: 1;
+  transition: color 0.15s;
+}
+.lang-opt-check {
+  font-size: 12px;
+  color: rgba(200, 200, 220, 0.9);
+}
+
+.lang-option + .lang-option::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10px; right: 10px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Utility ── */
+.hidden { display: none !important; }
+
+/* ── Theme Toggle ── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: scale(1.1);
+}
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+.theme-icon {
+  font-size: 20px;
+  line-height: 1;
+  transition: transform 0.3s ease;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.theme-icon.spin-animation {
+  animation: spinSun 0.6s ease-in-out;
+}
+
+.theme-icon.shake-animation {
+  animation: shakeMoon 0.4s ease-in-out;
+}
+
+@keyframes spinSun {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shakeMoon {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.theme-toggle:hover .theme-icon {
+  transform: rotate(20deg);
+}
+
+/* ── Light Theme для Navbar ── */
+body.light-theme .navbar {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 8px 40px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+body.light-theme .navbar-brand {
+  color: #1a1a1a;
+}
+body.light-theme .navbar-brand:hover {
+  color: #000;
+  text-shadow: 0 0 18px rgba(0, 0, 0, 0.15);
+}
+body.light-theme .nav-btn {
+  background: linear-gradient(135deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.08) 60%, rgba(0,0,0,0.12) 100%);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #1a1a1a;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    0 2px 12px rgba(0,0,0,0.08);
+}
+body.light-theme .nav-btn::before {
+  background: linear-gradient(135deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.03) 100%);
+}
+body.light-theme .nav-btn:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.6),
+    0 4px 20px rgba(0,0,0,0.12),
+    0 0 0 1px rgba(0,0,0,0.08);
+  color: #000;
+}
+body.light-theme #profileNavBtn,
+body.light-theme #adminPanelBtn {
+  background: transparent;
+  border-color: transparent;
+  color: rgba(0, 0, 0, 0.5);
+}
+body.light-theme #profileNavBtn:hover,
+body.light-theme #adminPanelBtn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.9);
+}
+body.light-theme .theme-toggle {
+  background: transparent;
+}
+body.light-theme .theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+body.light-theme .moon-mask {
+  fill: #f5f5f7;
+}
+body.light-theme .lang-trigger {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.03);
+  color: #1a1a1a;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.08);
+}
+body.light-theme .lang-trigger:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 4px 18px rgba(0,0,0,0.12);
+}
+body.light-theme .lang-trigger.open {
+  border-color: rgba(0, 0, 0, 0.18);
+  background: rgba(0, 0, 0, 0.08);
+}
+body.light-theme .lang-icon {
+  color: rgba(0, 0, 0, 0.6);
+}
+body.light-theme .lang-chevron {
+  color: rgba(0, 0, 0, 0.4);
+}
+body.light-theme .lang-trigger.open .lang-chevron {
+  color: rgba(0, 0, 0, 0.7);
+}
+body.light-theme .lang-dropdown-inner {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.05),
+    0 16px 48px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+}
+body.light-theme .lang-option:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+body.light-theme .lang-opt-name {
+  color: rgba(0, 0, 0, 0.65);
+}
+body.light-theme .lang-option:hover .lang-opt-name {
+  color: #1a1a1a;
+}
+body.light-theme .lang-opt-check {
+  color: rgba(0, 0, 0, 0.7);
+}
+body.light-theme .lang-option + .lang-option::before {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 600px) {
+  .navbar { padding: 10px 16px; top: 12px; width: calc(100% - 24px); }
+  .navbar-brand { font-size: 15px; }
+  .nav-btn { padding: 8px 14px; font-size: 13px; }
+  .lang-trigger { padding: 7px 10px; }
+}

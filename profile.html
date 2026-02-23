@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zenex Client - Профиль</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="./components/navbar.css">
+  <link rel="stylesheet" href="./components/footer.css">
+  <link rel="stylesheet" href="./components/background.css">
+  <link rel="stylesheet" href="./components/light-theme.css">
+  <link rel="stylesheet" href="./components/support-chat.css">
+  <link rel="stylesheet" href="./components/toast.css">
+  <link rel="stylesheet" href="./components/auth-modal.css">
+  <link rel="stylesheet" href="./components/ban-modal.css">
+  <script src="./components/theme.js"></script>
+  <script src="./components/i18n.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      color: #fff;
+      min-height: 150vh;
+      padding-top: 120px;
+    }
+
+    .profile-container {
+      max-width: 780px;
+      margin: 40px auto;
+      padding: 0 20px 300px;
+    }
+
+    /* ══════════════ ГЛАВНАЯ КАРТОЧКА ══════════════ */
+    .profile-card {
+      background: rgba(20, 20, 26, 0.97);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    /* ── Баннер ── */
+    .profile-banner {
+      width: 100%;
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #17171e 0%, #202030 100%);
+    }
+
+    .banner-blur {
+      position: absolute;
+      inset: -25px;
+      width: calc(100% + 50px);
+      height: calc(100% + 50px);
+      object-fit: cover;
+      filter: blur(24px) brightness(0.45) saturate(1.4);
+      display: none;
+    }
+
+    .banner-blur.show { display: block; }
+
+    .banner-fade {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, rgba(20,20,26,0.97));
+    }
+
+    /* ── Аватарка — по центру баннера ── */
+    .avatar-wrap {
+      position: absolute;
+      top: 50%;
+      left: 28px;
+      transform: translateY(-50%);
+      z-index: 10;
+    }
+
+    .av-ring {
+      position: relative;
+      width: 110px;
+      height: 110px;
+    }
+
+    .av-img {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.22);
+      background: rgba(28,28,38,0.95);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.25);
+      font-size: 42px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    }
+
+    .av-img img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
+    .av-cam {
+      position: absolute;
+      bottom: 1px; right: 1px;
+      width: 24px; height: 24px;
+      background: rgba(32,32,46,0.97);
+      border: 2px solid rgba(255,255,255,0.22);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 10px;
+      color: rgba(255,255,255,0.75);
+      transition: all 0.2s;
+      z-index: 5;
+    }
+
+    .av-cam:hover {
+      background: rgba(55,55,75,0.98);
+      border-color: rgba(255,255,255,0.45);
+      transform: scale(1.12);
+    }
+
+    .av-cam input { display: none; }
+
+    /* ── Тело ── */
+    .card-body {
+      padding: 22px 28px 28px;
+    }
+
+    .card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 21px;
+      font-weight: 700;
+      color: rgba(218,218,232,0.95);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title i { color: rgba(175,175,200,0.6); font-size: 19px; }
+
+    /* ── Строки ── */
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .row:last-of-type { border-bottom: none; }
+
+    .row-lbl {
+      font-size: 14px;
+      color: rgba(255,255,255,0.42);
+    }
+
+    .row-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.88);
+      font-family: 'Inter', sans-serif;
+      text-align: right;
+      max-width: 65%;
+      word-break: break-all;
+    }
+
+    /* ── Разделитель ── */
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.06);
+      margin: 22px 0;
+    }
+
+    /* ── Кнопки ── */
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .pbtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: none;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+
+    .pbtn.blue {
+      background: linear-gradient(135deg, rgba(80,80,100,0.7) 0%, rgba(55,55,75,0.85) 100%);
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+    }
+
+    .pbtn.blue:hover {
+      background: linear-gradient(135deg, rgba(100,100,125,0.8) 0%, rgba(70,70,95,0.9) 100%);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+
+    .pbtn.red {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(220,60,50,0.3);
+    }
+
+    .pbtn.red:hover {
+      background: linear-gradient(135deg, #f05c4e 0%, #d04939 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(220,60,50,0.4);
+    }
+
+    .pbtn.hidden { display: none !important; }
+
+    /* ══════════════ МОДАЛЬНЫЕ ОКНА ══════════════ */
+    .mo {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+      opacity: 0; visibility: hidden;
+      transition: all 0.28s ease;
+    }
+
+    .mo.active { opacity:1; visibility:visible; }
+
+    .mb {
+      background: rgba(16,16,24,0.98);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 34px;
+      max-width: 430px; width: 92%;
+      transform: scale(0.92) translateY(14px);
+      transition: transform 0.28s ease;
+      backdrop-filter: blur(32px);
+    }
+
+    .mo.active .mb { transform: scale(1) translateY(0); }
+
+    .mh {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .mt {
+      display: flex; align-items: center; gap:11px;
+      font-family: 'Orbitron', sans-serif; font-size: 19px; color: #fff;
+    }
+
+    .mt i { color: rgba(175,175,210,0.8); }
+
+    .mx {
+      width:32px; height:32px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; color:rgba(255,255,255,0.45); font-size:15px;
+      transition: all 0.2s;
+    }
+
+    .mx:hover { background:rgba(255,255,255,0.1); color:#fff; transform:rotate(90deg); }
+
+    .ml {
+      font-size: 12px; color: rgba(255,255,255,0.4);
+      margin-bottom: 7px; display: block;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    .mi {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 11px;
+      padding: 12px 15px; color: #fff;
+      font-size: 15px; font-family: 'Rajdhani', sans-serif;
+      outline: none; margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+
+    .mi:focus {
+      border-color: rgba(175,175,220,0.4);
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 0 0 3px rgba(175,175,220,0.07);
+    }
+
+    .mi::placeholder { color: rgba(255,255,255,0.22); }
+
+    .msub {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(100,100,130,0.35) 0%, rgba(65,65,100,0.7) 100%);
+      border: 1px solid rgba(175,175,210,0.2);
+      border-radius: 11px;
+      padding: 13px;
+      color: #fff; font-size: 15px; font-weight: 600;
+      font-family: 'Orbitron', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+    }
+
+    .msub:hover { background: linear-gradient(135deg, rgba(120,120,150,0.45) 0%, rgba(85,85,120,0.8) 100%); transform: translateY(-2px); box-shadow: 0 5px 18px rgba(0,0,0,0.35); }
+    .msub:disabled { opacity: 0.45; cursor:not-allowed; transform:none; }
+
+    .mm { margin-top:12px; padding:10px 13px; border-radius:9px; font-size:13px; text-align:center; display:none; }
+    .mm.ok  { display:block; background:rgba(76,175,80,0.1); border:1px solid rgba(76,175,80,0.3); color:#4caf50; }
+    .mm.err { display:block; background:rgba(244,67,54,0.1); border:1px solid rgba(244,67,54,0.3); color:#f44336; }
+
+    /* промокоды */
+    .psec-title { font-size:15px; font-weight:700; color:#fff; margin-bottom:14px; font-family:'Orbitron',sans-serif; }
+    .pcard { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:15px; margin-bottom:10px; }
+    .phdr  { display:flex; justify-content:space-between; align-items:center; margin-bottom:11px; padding-bottom:11px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .pcode { font-size:16px; font-weight:700; color:rgba(200,200,220,0.95); font-family:'Orbitron',sans-serif; letter-spacing:1px; }
+    .pbadge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; text-transform:uppercase; }
+    .pbadge.on  { background:rgba(76,175,80,0.18); color:#4caf50; border:1px solid rgba(76,175,80,0.35); }
+    .pbadge.off { background:rgba(244,67,54,0.18); color:#f44336; border:1px solid rgba(244,67,54,0.35); }
+    .pgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(105px,1fr)); gap:10px; }
+    .plbl  { font-size:11px; color:rgba(255,255,255,0.38); text-transform:uppercase; margin-bottom:2px; }
+    .pval  { font-size:14px; font-weight:600; color:#fff; }
+    .pnotice { margin-top:13px; padding:11px; background:rgba(255,80,80,0.06); border:1px solid rgba(255,255,255,0.07); border-radius:9px; font-size:12px; color:rgba(255,255,255,0.4); text-align:center; }
+
+    /* ══ История покупок ══ */
+    .profile-section {
+      margin-top: 28px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .section-header {
+      margin-bottom: 16px;
+    }
+    .section-header h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(210,210,225,0.95);
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-header p {
+      color: rgba(255,255,255,0.38);
+      font-size: 13px;
+    }
+    .transactions-list, .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .activity-list {
+      flex-direction: row;
+      max-height: auto;
+      max-width: 100%;
+      overflow-x: scroll !important;
+      overflow-y: hidden !important;
+      padding-bottom: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 12px;
+    }
+    
+    /* Скрыть нативный скролл */
+    .activity-list::-webkit-scrollbar {
+      height: 12px;
+    }
+    
+    .activity-list::-webkit-scrollbar-track {
+      background: #666;
+      border-radius: 20px;
+      margin: 0 5px;
+    }
+    
+    .activity-list::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 20px;
+    }
+    
+    .activity-list::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+    
+    /* Кастомный скролл-бар для activity-list - Chrome/Safari */
+    .activity-list::-webkit-scrollbar {
+      width: 12px !important;
+    }
+    
+    .activity-list::-webkit-scrollbar-track {
+      background: #666 !important;
+      border-radius: 10px !important;
+    }
+    
+    .activity-list::-webkit-scrollbar-thumb {
+      background: #444 !important;
+      border-radius: 10px !important;
+      border: 2px solid #666 !important;
+    }
+    
+    .activity-list::-webkit-scrollbar-thumb:hover {
+      background: #555 !important;
+    }
+    
+    .activity-list::-webkit-scrollbar-button {
+      display: none !important;
+    }
+    .transaction-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+    .transaction-item:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.13);
+    }
+    .transaction-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .transaction-icon {
+      width: 42px;
+      height: 42px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: rgba(180,180,210,0.8);
+      flex-shrink: 0;
+    }
+    .transaction-details h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.88);
+      margin-bottom: 3px;
+    }
+    .transaction-details p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+    .transaction-amount {
+      font-size: 16px;
+      font-weight: 700;
+      color: #4caf50;
+      font-family: 'Inter', sans-serif;
+    }
+    .activity-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      transition: all 0.2s ease;
+      min-width: 280px;
+      flex-shrink: 0;
+    }
+    .activity-item:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    .activity-icon {
+      width: 38px;
+      height: 38px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: rgba(180,180,210,0.8);
+      flex-shrink: 0;
+    }
+    .activity-content { flex: 1; }
+    .activity-content h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.88);
+      margin-bottom: 3px;
+    }
+    .activity-content p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+    .activity-time {
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: rgba(255,255,255,0.25);
+    }
+    .empty-state i {
+      font-size: 36px;
+      margin-bottom: 12px;
+      display: block;
+      opacity: 0.4;
+    }
+    .empty-state p { font-size: 13px; }
+
+    /* ══════════════ СВЕТЛАЯ ТЕМА ══════════════ */
+    body.light-theme {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .profile-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    body.light-theme .profile-banner {
+      background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d8 100%);
+    }
+
+    body.light-theme .banner-blur {
+      filter: blur(24px) brightness(0.9) saturate(0.8);
+    }
+
+    body.light-theme .banner-fade {
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95));
+    }
+
+    body.light-theme .av-img {
+      border-color: rgba(0, 0, 0, 0.15);
+      background: rgba(240, 240, 245, 0.95);
+      color: rgba(0, 0, 0, 0.3);
+    }
+
+    body.light-theme .av-img img {
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    body.light-theme .profile-info {
+      background: rgba(255, 255, 255, 0.5);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    body.light-theme .username {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .user-id {
+      color: rgba(0, 0, 0, 0.5);
+    }
+
+    body.light-theme .sub-badge {
+      background: rgba(0, 0, 0, 0.08);
+      color: rgba(0, 0, 0, 0.7);
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+
+    body.light-theme .sub-badge.lifetime {
+      background: linear-gradient(135deg, rgba(200, 180, 100, 0.2), rgba(180, 160, 80, 0.3));
+      color: rgba(100, 80, 30, 0.95);
+      border-color: rgba(200, 180, 100, 0.3);
+    }
+
+    body.light-theme .profile-stats {
+      background: rgba(255, 255, 255, 0.5);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    body.light-theme .stat-item {
+      border-right: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    body.light-theme .stat-value {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .stat-label {
+      color: rgba(0, 0, 0, 0.5);
+    }
+
+    body.light-theme .profile-actions {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    body.light-theme .action-btn {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: rgba(0, 0, 0, 0.1);
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    body.light-theme .action-btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+      border-color: rgba(0, 0, 0, 0.15);
+      color: #1a1a1a;
+    }
+
+    body.light-theme .action-btn.danger {
+      background: rgba(220, 50, 50, 0.08);
+      border-color: rgba(220, 50, 50, 0.2);
+      color: rgba(180, 30, 30, 0.9);
+    }
+
+    body.light-theme .action-btn.danger:hover {
+      background: rgba(220, 50, 50, 0.12);
+      border-color: rgba(220, 50, 50, 0.3);
+    }
+
+    body.light-theme .activity-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    body.light-theme .activity-title {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .activity-item {
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    body.light-theme .activity-item:hover {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    body.light-theme .activity-icon {
+      background: rgba(0, 0, 0, 0.05);
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    body.light-theme .activity-content h4 {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .activity-content p {
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    body.light-theme .activity-time {
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    body.light-theme .empty-state {
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    /* Светлая тема - скролл-бар */
+    body.light-theme .activity-list::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05) !important;
+    }
+
+    body.light-theme .activity-list::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2) !important;
+      border-color: rgba(0, 0, 0, 0.05) !important;
+    }
+
+    body.light-theme .activity-list::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3) !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <div class="profile-container">
+    <div class="profile-card">
+
+      <!-- БАННЕР + АВАТАРКА -->
+      <div class="profile-banner">
+        <img class="banner-blur" id="bannerBlur" src="" alt="">
+        <div class="banner-fade"></div>
+        <div class="avatar-wrap">
+          <div class="av-ring">
+            <div class="av-img" id="avImg">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <label class="av-cam" title="Сменить аватарку">
+              <i class="fa-solid fa-camera"></i>
+              <input type="file" accept="image/*" onchange="uploadAvatar(event)">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ДАННЫЕ -->
+      <div class="card-body">
+        <div class="card-title">
+          <i class="fa-solid fa-house"></i>
+          <span data-i18n="profile-cabinet">Личный кабинет</span>
+        </div>
+
+        <div class="row"><span class="row-lbl" data-i18n="profile-login">Логин</span><span class="row-val" id="dUser">—</span></div>
+        <div class="row"><span class="row-lbl" data-i18n="profile-email">E-mail</span><span class="row-val" id="dEmail">—</span></div>
+        <div class="row"><span class="row-lbl" data-i18n="profile-role">Роль</span><span class="row-val" id="dRole">—</span></div>
+        <div class="row"><span class="row-lbl" data-i18n="profile-reg-date">Дата регистрации</span><span class="row-val" id="dReg">—</span></div>
+        <div class="row" id="rSubType" style="display:none"><span class="row-lbl" data-i18n="profile-sub-type">Тип подписки</span><span class="row-val" id="dSubType">—</span></div>
+        <div class="row" id="rSubIssued" style="display:none"><span class="row-lbl" data-i18n="profile-sub-issued">Дата выдачи подписки</span><span class="row-val" id="dSubIssued">—</span></div>
+        <div class="row" id="rSubEnd"    style="display:none"><span class="row-lbl" data-i18n="profile-sub-end">Подписка до</span><span class="row-val" id="dSubEnd">—</span></div>
+        <div class="row" id="rHwid"      style="display:none"><span class="row-lbl" data-i18n="profile-hwid">HWID</span><span class="row-val" id="dHwid" style="font-size:11px">—</span></div>
+
+        <div class="divider"></div>
+
+        <!-- КНОПКИ -->
+        <div class="btn-row">
+          <button class="pbtn blue hidden" id="btnDL"    onclick="downloadLauncher()"><i class="fa-solid fa-download"></i> <span data-i18n="profile-download">Скачать клиент</span></button>
+          <button class="pbtn blue"                       onclick="openModal('keyMod')"><i class="fa-solid fa-key"></i> <span data-i18n="profile-activate-key">Активировать ключ</span></button>
+          <button class="pbtn blue"                       onclick="openModal('pwdMod')"><i class="fa-solid fa-lock"></i> <span data-i18n="profile-change-pwd">Изменить пароль</span></button>
+          <button class="pbtn blue hidden" id="btnPromo" onclick="openModal('promoMod')"><i class="fa-solid fa-ticket"></i> <span data-i18n="profile-promo">Промокоды</span></button>
+          <button class="pbtn blue hidden" id="btnAdmin" onclick="window.location.href='admin.html'"><i class="fa-solid fa-gear"></i> <span data-i18n="profile-admin">Admin Panel</span></button>
+          <button class="pbtn red"                        onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="profile-logout">Выйти</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- История покупок -->
+    <div class="profile-section">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-receipt"></i> <span data-i18n="profile-purchases">История покупок</span></h2>
+        <p data-i18n="profile-purchases-desc">Детальная история ваших транзакций</p>
+      </div>
+      <div class="transactions-list" id="transactionsList">
+        <div class="empty-state">
+          <i class="fa-solid fa-shopping-bag"></i>
+          <p data-i18n="profile-no-purchases">У вас пока нет покупок</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- История активности -->
+    <div class="profile-section">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="profile-activity">История активности</span></h2>
+        <p data-i18n="profile-activity-desc">Лог ваших действий в системе</p>
+      </div>
+      <div class="activity-list" id="activityList">
+        <div class="empty-state">
+          <i class="fa-solid fa-list"></i>
+          <p data-i18n="profile-activity-empty">История активности пуста</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 400px;"></div>
+
+  <!-- Модалка: ключ -->
+  <div class="mo" id="keyMod" onclick="closeModal('keyMod',event)">
+    <div class="mb" onclick="event.stopPropagation()">
+      <div class="mh">
+        <div class="mt"><i class="fa-solid fa-key"></i> <span data-i18n="modal-activate-key">Активировать ключ</span></div>
+        <div class="mx" onclick="closeModal('keyMod')"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <label class="ml" data-i18n="modal-key-label">Ключ активации</label>
+      <input type="text" class="mi" id="keyInp" placeholder="XXXX-XXXX-XXXX-XXXX">
+      <button class="msub" id="keyBtn" onclick="activateKey()"><i class="fa-solid fa-unlock"></i> <span data-i18n="modal-activate">Активировать</span></button>
+      <div class="mm" id="keyMsg"></div>
+    </div>
+  </div>
+
+  <!-- Модалка: пароль -->
+  <div class="mo" id="pwdMod" onclick="closeModal('pwdMod',event)">
+    <div class="mb" onclick="event.stopPropagation()">
+      <div class="mh">
+        <div class="mt"><i class="fa-solid fa-lock"></i> <span data-i18n="modal-change-pwd">Сменить пароль</span></div>
+        <div class="mx" onclick="closeModal('pwdMod')"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <label class="ml" data-i18n="modal-current-pwd">Текущий пароль</label>
+      <input type="password" class="mi" id="curPwd" placeholder="Текущий пароль">
+      <label class="ml" data-i18n="modal-new-pwd">Новый пароль</label>
+      <input type="password" class="mi" id="newPwd" placeholder="Новый пароль">
+      <label class="ml" data-i18n="modal-confirm-pwd">Повторите пароль</label>
+      <input type="password" class="mi" id="cfmPwd" placeholder="Повторите пароль">
+      <button class="msub" id="pwdBtn" onclick="changePassword()"><i class="fa-solid fa-check"></i> <span data-i18n="modal-change">Изменить пароль</span></button>
+      <div class="mm" id="pwdMsg"></div>
+    </div>
+  </div>
+
+  <!-- Модалка: промокоды -->
+  <div class="mo" id="promoMod" onclick="closeModal('promoMod',event)">
+    <div class="mb" style="max-width:540px" onclick="event.stopPropagation()">
+      <div class="mh">
+        <div class="mt"><i class="fa-solid fa-ticket"></i> <span data-i18n="modal-my-promo">Мои промокоды</span></div>
+        <div class="mx" onclick="closeModal('promoMod')"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <div id="promoCreate">
+        <label class="ml" data-i18n="modal-create-promo">Создать промокод (макс. 12 символов, латиница)</label>
+        <input type="text" class="mi" id="promoInp" placeholder="MYCODE2026" maxlength="12" style="text-transform:uppercase">
+        <button class="msub" id="promoBtn" onclick="createPromoCode()"><i class="fa-solid fa-plus"></i> <span data-i18n="modal-create">Создать</span></button>
+        <div class="mm" id="promoMsg"></div>
+      </div>
+      <div id="promoList" style="display:none">
+        <div class="psec-title" data-i18n="modal-your-promo">Ваши промокоды</div>
+        <div id="promoCards"></div>
+        <div class="pnotice"><i class="fa-solid fa-circle-info"></i> <span data-i18n="modal-promo-note">Обратитесь к администратору для активации.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+  <div id="support-chat-placeholder"></div>
+
+  <script src="./components/footer.js"></script>
+  <script src="./components/background.js"></script>
+  <script src="./components/notifications.js"></script>
+  <script src="./components/transitions.js"></script>
+  <script src="./components/auth-modal.js"></script>
+
+  <script src="./components/toast.js"></script>
+  <script src="./components/ban-modal.js"></script>
+  <script src="./components/ban-checker.js"></script>
+
+  <script>
+    fetch('./components/support-chat.html').then(r=>r.text()).then(h=>{
+      document.getElementById('support-chat-placeholder').innerHTML=h;
+      const s=document.createElement('script');s.src='./components/support-chat.js';document.body.appendChild(s);
+    }).catch(()=>{});
+  </script>
+
+  <script>
+    const SB_URL='https://xlruthqgapbgxfowavln.supabase.co';
+    const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhscnV0aHFnYXBiZ3hmb3dhdmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTY2MjMsImV4cCI6MjA4NTI3MjYyM30.dwBTGOPGgEb2Qg3ZaK8Q8XJjx64gdHQy48r_pnLxPic';
+    let sb=null, cu=null;
+    try{sb=window.supabase.createClient(SB_URL,SB_KEY);}catch(e){}
+
+    /* ── Модалки ── */
+    function openModal(id){
+      document.getElementById(id).classList.add('active');
+      document.body.style.overflow='hidden';
+      if(id==='keyMod'){val('keyInp','');clrMsg('keyMsg');}
+      if(id==='pwdMod'){['curPwd','newPwd','cfmPwd'].forEach(f=>val(f,''));clrMsg('pwdMsg');}
+      if(id==='promoMod'){val('promoInp','');clrMsg('promoMsg');loadPromos();}
+    }
+    function closeModal(id,e){
+      if(e&&e.target!==e.currentTarget)return;
+      document.getElementById(id).classList.remove('active');
+      document.body.style.overflow='';
+    }
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){document.querySelectorAll('.mo.active').forEach(m=>m.classList.remove('active'));document.body.style.overflow='';}
+    });
+    function val(id,v){const e=document.getElementById(id);if(e)e.value=v;}
+    function clrMsg(id){setMsg(id,'','');}
+    function setMsg(id,cls,txt){const e=document.getElementById(id);if(!e)return;e.className='mm'+(cls?' '+cls:'');e.textContent=txt;}
+    function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+    function showEl(id,flex){
+      const e=document.getElementById(id);
+      if(e) {
+        e.classList.remove('hidden');
+        e.style.display=flex||'flex';
+        console.log(`👁️ Showing element: ${id}`);
+      } else {
+        console.error(`❌ Element not found: ${id}`);
+      }
+    }
+
+    // Функция для перевода текста в элементах с data-i18n
+    function translateElements() {
+      if (typeof updatePageLanguage === 'function') {
+        updatePageLanguage();
+      }
+    }
+
+    /* ── Navbar ── */
+    fetch('./components/navbar.html').then(r=>r.text()).then(h=>{
+      document.getElementById('navbar').innerHTML=h;
+      const s=document.createElement('script');
+      s.src='./components/navbar.js';
+      s.onload=()=>{
+        if(typeof window.updateNavbarAuth==='function')window.updateNavbarAuth();
+        loadProfile();
+        // Обновляем переводы после загрузки navbar
+        setTimeout(() => {
+          if (typeof updatePageLanguage === 'function') {
+            updatePageLanguage();
+          }
+        }, 100);
+      };
+      s.onerror=()=>loadProfile();
+      document.body.appendChild(s);
+    }).catch(()=>loadProfile());
+
+    /* ── Профиль ── */
+    async function loadProfile(){
+      const saved=localStorage.getItem('currentUser');
+      if(!saved){window.location.href='auth.html';return;}
+      cu=JSON.parse(saved);
+
+      if(sb){
+        try{
+          const{data,error}=await sb.from('users').select('*').eq('username',cu.username).single();
+          if(data&&!error){cu=data;localStorage.setItem('currentUser',JSON.stringify(cu));}
+          console.log('👤 is_youtuber:', cu.is_youtuber, '| is_admin:', cu.is_admin);
+        }catch(e){console.error('DB error:',e);}
+      }
+
+      // Проверяем статус бана
+      if(cu.ban && cu.ban_until) {
+        const banUntil = new Date(cu.ban_until).getTime();
+        const now = new Date().getTime();
+        
+        if(banUntil > now) {
+          // Пользователь забанен
+          console.log('🚫 User is banned until:', cu.ban_until);
+          window.banModal.show(cu);
+          return; // Прерываем загрузку профиля
+        }
+      }
+
+      const role=cu.is_admin?'admin':cu.is_youtuber?'youtuber':'user';
+      set('dUser',cu.username||'—');
+      set('dEmail',cu.email||'—');
+      set('dRole',role);
+      set('dReg',cu.created_at?fmt(cu.created_at):'—');
+
+      if(cu.subscription && cu.subscription !== 'none') {
+        set('dSubType', cu.subscription);
+        showEl('rSubType');
+      }
+      if(cu.subscription_start){set('dSubIssued',fmtdt(cu.subscription_start));showEl('rSubIssued');}
+      if(cu.subscription_end)  {set('dSubEnd',fmtdt(cu.subscription_end));showEl('rSubEnd');}
+      if(cu.hwid)               {set('dHwid',cu.hwid);showEl('rHwid');}
+
+      if(cu.subscription&&cu.subscription!=='none')showEl('btnDL','inline-flex');
+      
+      console.log('🔍 Checking buttons - is_youtuber:', cu.is_youtuber, 'is_admin:', cu.is_admin);
+      if(cu.is_youtuber) {
+        console.log('✅ Showing YouTuber button');
+        showEl('btnPromo','inline-flex');
+      }
+      if(cu.is_admin) {
+        console.log('✅ Showing Admin button');
+        showEl('btnAdmin','inline-flex');
+      }
+
+      loadAvatar();
+      
+      // Загружаем историю с небольшой задержкой, чтобы Supabase был готов
+      setTimeout(() => {
+        loadTransactions();
+        loadActivity();
+        // Обновляем переводы после загрузки профиля
+        translateElements();
+      }, 500);
+    }
+
+    function fmt(d){return new Date(d).toLocaleDateString('ru-RU');}
+    function fmtdt(d){return new Date(d).toLocaleString('ru-RU');}
+
+    /* ── Аватарка ── */
+    function loadAvatar(){if(cu&&cu.avatar)applyAv(cu.avatar);}
+    function applyAv(src){
+      document.getElementById('avImg').innerHTML=`<img src="${src}" alt="">`;
+      const b=document.getElementById('bannerBlur');b.src=src;b.classList.add('show');
+    }
+    async function uploadAvatar(e){
+      const f=e.target.files[0];if(!f)return;
+      if(!f.type.startsWith('image/')){toast.warning('Выберите изображение!');return;}
+      if(f.size>5*1024*1024){toast.warning('Максимум 5 МБ!');return;}
+      const r=new FileReader();
+      r.onload=async function(ev){
+        const b64=ev.target.result;
+        applyAv(b64);
+        if(sb&&cu){
+          try{
+            await sb.from('users').update({avatar:b64}).eq('username',cu.username);
+            cu.avatar=b64;
+            localStorage.setItem('currentUser',JSON.stringify(cu));
+            
+            // Логируем действие
+            try {
+              await sb.from('activity_log').insert({
+                username: cu.username,
+                action_type: 'avatar_upload',
+                title: 'Загрузка аватара',
+                description: 'Аватар успешно обновлен',
+                icon: 'image'
+              });
+            } catch(e) { console.log('Activity log error:', e); }
+            
+            toast.success('Аватар обновлен!');
+          }
+          catch(err){
+            console.error(err);
+            toast.error('Ошибка загрузки аватара');
+          }
+        }
+      };
+      r.readAsDataURL(f);
+    }
+
+    /* ── Скачать ── */
+    function downloadLauncher(){
+      const a=document.createElement('a');a.href='download/Zenex launcher.exe';a.download='Zenex launcher.exe';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+    }
+
+    /* ── Активация ключа ── */
+    async function activateKey(){
+      const key=document.getElementById('keyInp').value.trim().toUpperCase();
+      const btn=document.getElementById('keyBtn');
+      clrMsg('keyMsg');
+      if(!key){toast.warning('Введите ключ!');return;}
+      btn.disabled=true;
+      try{
+        const{data:kd,error}=await sb.from('keys').select('*').eq('key_code',key).single();
+        if(error||!kd){toast.error('Ключ не найден!');btn.disabled=false;return;}
+        if(kd.is_used){toast.error('Ключ уже использован!');btn.disabled=false;return;}
+        const st=kd.product_type;
+        if(st==='hwid_reset'){
+          await sb.from('users').update({hwid:null}).eq('username',cu.username);
+          toast.success('HWID сброшен!');
+          
+          // Логируем действие
+          try {
+            await sb.from('activity_log').insert({
+              username: cu.username,
+              action_type: 'key_activated',
+              title: 'HWID сброшен',
+              description: 'Активирован ключ сброса HWID',
+              icon: 'rotate'
+            });
+          } catch(e) { console.log('Activity log error:', e); }
+        } else {
+          const days=st==='month'?30:st==='year'?365:0;
+          const end=days>0?new Date(Date.now()+days*86400000).toISOString():null;
+          const start=new Date().toISOString();
+          await sb.from('users').update({subscription:st,subscription_end:end,subscription_start:start}).eq('username',cu.username);
+          toast.success(`Подписка "${st}" активирована!`);
+          
+          // Логируем действие
+          try {
+            await sb.from('activity_log').insert({
+              username: cu.username,
+              action_type: 'key_activated',
+              title: 'Активирован ключ',
+              description: `Подписка "${st}" активирована`,
+              icon: 'key'
+            });
+          } catch(e) { console.log('Activity log error:', e); }
+        }
+        await sb.from('keys').update({is_used:true,used_by:cu.username,used_at:new Date().toISOString()}).eq('key_code',key);
+        setTimeout(()=>{closeModal('keyMod');loadProfile();},2000);
+      }catch(err){console.error(err);toast.error('Ошибка при активации!');}
+      finally{btn.disabled=false;}
+    }
+
+    /* ── Смена пароля ── */
+    async function changePassword(){
+      const cur=document.getElementById('curPwd').value;
+      const nw=document.getElementById('newPwd').value;
+      const cf=document.getElementById('cfmPwd').value;
+      const btn=document.getElementById('pwdBtn');
+      clrMsg('pwdMsg');
+      if(!cur||!nw||!cf){toast.warning('Заполните все поля!');return;}
+      if(nw!==cf){toast.warning('Пароли не совпадают!');return;}
+      if(nw.length<6){toast.warning('Минимум 6 символов!');return;}
+      btn.disabled=true;
+      try{
+        const{data:ud,error}=await sb.from('users').select('password').eq('username',cu.username).single();
+        if(error||!ud){toast.error('Ошибка проверки!');btn.disabled=false;return;}
+        if(ud.password!==cur){toast.error('Неверный текущий пароль!');btn.disabled=false;return;}
+        const{error:ue}=await sb.from('users').update({password:nw}).eq('username',cu.username);
+        if(ue){toast.error('Ошибка при смене пароля!');btn.disabled=false;return;}
+        toast.success('Пароль успешно изменён!');
+        
+        // Логируем действие
+        try {
+          await sb.from('activity_log').insert({
+            username: cu.username,
+            action_type: 'password_change',
+            title: 'Смена пароля',
+            description: 'Пароль успешно изменен',
+            icon: 'lock'
+          });
+        } catch(e) { console.log('Activity log error:', e); }
+        
+        setTimeout(()=>closeModal('pwdMod'),2000);
+      }catch(e){console.error(e);toast.error('Произошла ошибка!');}
+      finally{btn.disabled=false;}
+    }
+
+    /* ── Выход ── */
+    function logout(){
+      toast.confirm('Вы уверены, что хотите выйти?', doLogout);
+    }
+    async function doLogout(){
+      toast.info('До скорой встречи!');
+      
+      // Логируем выход
+      try {
+        await sb.from('activity_log').insert({
+          username: cu.username,
+          action_type: 'logout',
+          title: 'Выход из системы',
+          description: 'Пользователь вышел из аккаунта',
+          icon: 'right-from-bracket'
+        });
+      } catch(e) { console.log('Activity log error:', e); }
+      
+      setTimeout(() => {
+        localStorage.removeItem('currentUser');
+        if(sb)sb.auth.signOut().catch(()=>{});
+        window.location.href='index.html';
+      }, 2000);
+    }
+
+    /* ── Промокоды ── */
+    async function loadPromos(){
+      if(!cu)return;
+      try{
+        const{data}=await sb.from('promo_codes').select('*').eq('owner_username',cu.username);
+        if(!data||data.length===0){
+          document.getElementById('promoCreate').style.display='block';
+          document.getElementById('promoList').style.display='none';
+        } else {
+          document.getElementById('promoCreate').style.display='none';
+          document.getElementById('promoList').style.display='block';
+          document.getElementById('promoCards').innerHTML=data.map(p=>`
+            <div class="pcard">
+              <div class="phdr">
+                <div class="pcode">${p.code}</div>
+                <div class="pbadge ${p.is_active?'on':'off'}">${p.is_active?'Активен':'Неактивен'}</div>
+              </div>
+              <div class="pgrid">
+                <div><div class="plbl">Использований</div><div class="pval">${p.uses_count}</div></div>
+                <div><div class="plbl">Скидка</div><div class="pval">${p.discount_percent}%</div></div>
+                <div><div class="plbl">Создан</div><div class="pval">${fmt(p.created_at)}</div></div>
+                <div><div class="plbl">Истекает</div><div class="pval">${p.expires_at?fmt(p.expires_at):'Бессрочно'}</div></div>
+              </div>
+            </div>`).join('');
+        }
+      }catch(e){console.error(e);}
+    }
+
+    async function createPromoCode(){
+      const code=document.getElementById('promoInp').value.trim().toUpperCase();
+      const btn=document.getElementById('promoBtn');
+      clrMsg('promoMsg');
+      if(!code){setMsg('promoMsg','err','Введите промокод!');return;}
+      if(code.length>12){setMsg('promoMsg','err','Максимум 12 символов!');return;}
+      if(!/^[A-Z0-9]+$/.test(code)){setMsg('promoMsg','err','Только латиница и цифры!');return;}
+      btn.disabled=true;
+      try{
+        const{data:ex}=await sb.from('promo_codes').select('code').eq('code',code).single();
+        if(ex){setMsg('promoMsg','err','Такой промокод уже существует!');btn.disabled=false;return;}
+        const{data:up}=await sb.from('promo_codes').select('*').eq('owner_username',cu.username);
+        if(up&&up.length>0){setMsg('promoMsg','err','Вы уже создали промокод!');btn.disabled=false;return;}
+        const{error}=await sb.from('promo_codes').insert([{code,owner_username:cu.username,discount_percent:10,is_active:false}]);
+        if(error){setMsg('promoMsg','err','Ошибка создания!');btn.disabled=false;return;}
+        setMsg('promoMsg','ok','Промокод создан!');
+        setTimeout(()=>loadPromos(),1800);
+      }catch(e){console.error(e);setMsg('promoMsg','err','Произошла ошибка!');}
+      finally{btn.disabled=false;}
+    }
+
+    /* ── История покупок ── */
+    async function loadTransactions(){
+      if(!sb||!cu){
+        console.warn('⚠️ loadTransactions: sb или cu не готовы');
+        return;
+      }
+      const list=document.getElementById('transactionsList');
+      try{
+        console.log('📦 Загружаю покупки для:', cu.username);
+        const{data,error}=await sb.from('purchases').select('*').eq('username',cu.username).order('created_at',{ascending:false});
+        console.log('📦 Purchases data:', data, 'Error:', error);
+        
+        if(error){
+          console.error('❌ Ошибка БД:', error);
+          list.innerHTML='<div class="empty-state"><i class="fa-solid fa-shopping-bag"></i><p>Ошибка загрузки</p></div>';
+          return;
+        }
+        
+        if(!data||data.length===0){
+          console.log('📦 Нет покупок');
+          list.innerHTML='<div class="empty-state"><i class="fa-solid fa-shopping-bag"></i><p>У вас пока нет покупок</p></div>';
+          return;
+        }
+        
+        console.log('📦 Найдено покупок:', data.length);
+        list.innerHTML=data.map(t=>`
+          <div class="transaction-item">
+            <div class="transaction-info">
+              <div class="transaction-icon"><i class="fa-solid fa-crown"></i></div>
+              <div class="transaction-details">
+                <h4>${t.product_name||t.type||'Покупка'}</h4>
+                <p>${fmt(t.created_at)}</p>
+              </div>
+            </div>
+            <div class="transaction-amount">${t.amount?t.amount+' ₽':''}</div>
+          </div>`).join('');
+      }catch(e){
+        console.error('❌ Transactions error:', e);
+        list.innerHTML='<div class="empty-state"><i class="fa-solid fa-shopping-bag"></i><p>Ошибка загрузки</p></div>';
+      }
+    }
+
+    /* ── История активности ── */
+    async function loadActivity(){
+      if(!sb||!cu){
+        console.warn('⚠️ loadActivity: sb или cu не готовы');
+        return;
+      }
+      const list=document.getElementById('activityList');
+      try{
+        console.log('📋 Загружаю активность для:', cu.username);
+        const{data,error}=await sb.from('activity_log').select('*').eq('username',cu.username).order('created_at',{ascending:false}).limit(20);
+        console.log('📋 Activity data:', data, 'Error:', error);
+        
+        if(error){
+          console.error('❌ Ошибка БД:', error);
+          list.innerHTML='<div class="empty-state"><i class="fa-solid fa-list"></i><p>Ошибка загрузки</p></div>';
+          return;
+        }
+        
+        if(!data||data.length===0){
+          console.log('📋 Нет активности');
+          list.innerHTML='<div class="empty-state"><i class="fa-solid fa-list"></i><p>История активности пуста</p></div>';
+          return;
+        }
+        
+        console.log('📋 Найдено записей:', data.length);
+        list.innerHTML=data.map(a=>`
+          <div class="activity-item">
+            <div class="activity-icon"><i class="fa-solid fa-${a.icon||'circle-dot'}"></i></div>
+            <div class="activity-content">
+              <h4>${a.title||a.action||'Действие'}</h4>
+              <p>${a.description||''}</p>
+            </div>
+            <div class="activity-time">${timeAgo(a.created_at)}</div>
+          </div>`).join('');
+      }catch(e){
+        console.error('❌ Activity error:', e);
+        list.innerHTML='<div class="empty-state"><i class="fa-solid fa-list"></i><p>Ошибка загрузки</p></div>';
+      }
+    }
+
+    function timeAgo(d){
+      const s=Math.floor((Date.now()-new Date(d))/1000);
+      if(s<60)return'только что';
+      if(s<3600)return Math.floor(s/60)+' мин назад';
+      if(s<86400)return Math.floor(s/3600)+' ч назад';
+      return Math.floor(s/86400)+' дн назад';
+    }
+
+    // Инициализируем при загрузке
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTransactions();
+      loadActivity();
+      translateElements();
+    });
+  </script>
+</body>
+</html>

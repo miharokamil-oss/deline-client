@@ -1,0 +1,38 @@
+/* ============================================================
+   INPUT/TEXTAREA OPTIMIZATION
+   Плавная анимация появления текста
+   ============================================================ */
+
+input,
+textarea,
+[contenteditable] {
+  /* Оптимизация рендеринга */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+/* Анимация появления текста снизу вверх */
+@keyframes textAppear {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Применяем анимацию к тексту */
+input,
+textarea {
+  animation: textAppear 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Плавное появление каждого символа */
+input:not(:placeholder-shown),
+textarea:not(:placeholder-shown) {
+  animation: textAppear 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}

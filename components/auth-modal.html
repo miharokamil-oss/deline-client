@@ -1,0 +1,132 @@
+<div class="auth-modal-overlay" id="authModalOverlay">
+  <div class="auth-modal" id="authModal">
+    <div class="auth-modal-close" onclick="closeAuthModal()">✕</div>
+
+    <div class="auth-icon" id="modalCardIcon">🔐</div>
+    <h2 class="auth-title" id="modalCardTitle">Zenex</h2>
+    <p class="auth-subtitle" id="modalCardSub">Твой персональный чит-клиент. Войди и начни.</p>
+
+    <div class="pbars hidden" id="modalPbars">
+      <div class="pbar lit" id="modalPb1"></div>
+      <div class="pbar" id="modalPb2"></div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="modalVLogin">
+      <div id="modalLoginMsg" class="msg hidden"></div>
+
+      <div class="fg">
+        <label>Электронная почта</label>
+        <input type="email" id="modalLoginEmail" placeholder="example@mail.com" autocomplete="email">
+      </div>
+
+      <div class="fg">
+        <label>Пароль</label>
+        <div class="pw-wrap">
+          <input type="password" id="modalLoginPw" placeholder="Введите пароль" autocomplete="current-password">
+          <button type="button" class="eye" onclick="eyeToggle('modalLoginPw',this)">👁</button>
+        </div>
+      </div>
+
+      <div class="forgot"><a href="#" onclick="return false">Забыли пароль?</a></div>
+
+      <div class="ts-wrap">
+        <div class="cf-turnstile" id="tsModalLoginWidget"
+             data-sitekey="0x4AAAAAACWd-naYvm0t4Ju8"
+             data-theme="dark"
+             data-callback="onModalLoginTS"></div>
+      </div>
+
+      <button class="btn" id="modalLoginBtn" onclick="doModalLogin()">Войти</button>
+
+      <div class="auth-link">
+        <span>Нет аккаунта?</span> <a href="#" onclick="event.preventDefault(); modalGoTo('reg1')">Зарегистрироваться</a>
+      </div>
+    </div>
+
+    <!-- REG step 1 -->
+    <div id="modalVReg1" class="hidden">
+      <div id="modalReg1Msg" class="msg hidden"></div>
+
+      <div class="info-box">
+        Мы отправим код подтверждения на<br>
+        <strong id="modalEmailHint">example@mail.com</strong>
+      </div>
+
+      <div class="fg">
+        <label>Никнейм</label>
+        <input type="text" id="modalRegUsername" placeholder="your_nickname" autocomplete="off" maxlength="32">
+      </div>
+
+      <div class="fg">
+        <label>Электронная почта</label>
+        <input type="email" id="modalRegEmail" placeholder="example@mail.com" autocomplete="email"
+               oninput="document.getElementById('modalEmailHint').textContent=this.value||'example@mail.com'">
+      </div>
+
+      <div class="fg">
+        <label>Пароль</label>
+        <div class="pw-wrap">
+          <input type="password" id="modalRegPw" placeholder="Минимум 6 символов" autocomplete="new-password">
+          <button type="button" class="eye" onclick="eyeToggle('modalRegPw',this)">👁</button>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>Подтвердите пароль</label>
+        <div class="pw-wrap">
+          <input type="password" id="modalRegPw2" placeholder="Повторите пароль" autocomplete="new-password">
+          <button type="button" class="eye" onclick="eyeToggle('modalRegPw2',this)">👁</button>
+        </div>
+      </div>
+
+      <div class="ts-wrap">
+        <div class="cf-turnstile" id="tsModalRegWidget"
+             data-sitekey="0x4AAAAAACWd-naYvm0t4Ju8"
+             data-theme="dark"
+             data-callback="onModalRegTS"></div>
+      </div>
+
+      <button class="btn" id="modalReg1Btn" onclick="doModalReg1()">Зарегистрироваться</button>
+
+      <div class="auth-link">
+        Уже есть аккаунт? <a href="#" onclick="event.preventDefault(); modalGoTo('login')">Войти</a>
+      </div>
+    </div>
+
+    <!-- REG step 2 (код) -->
+    <div id="modalVReg2" class="hidden">
+      <div id="modalReg2Msg" class="msg hidden"></div>
+
+      <div class="info-box">
+        Если письмо не пришло — проверьте папку «Спам»
+      </div>
+
+      <p style="text-align:center;font-size:13px;color:rgba(255,255,255,.45);margin-bottom:2px;">
+        Код отправлен на <strong style="color:rgba(255,255,255,.75)" id="modalSentTo">—</strong>
+      </p>
+
+      <div class="code-row">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="modalC1" oninput="cn(this,'modalC2')" onkeydown="cb(event,'modalC1',null)">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="modalC2" oninput="cn(this,'modalC3')" onkeydown="cb(event,'modalC2','modalC1')">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="modalC3" oninput="cn(this,'modalC4')" onkeydown="cb(event,'modalC3','modalC2')">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="modalC4" oninput="cn(this,'modalC5')" onkeydown="cb(event,'modalC4','modalC3')">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="modalC5" oninput="cn(this,'modalC6')" onkeydown="cb(event,'modalC5','modalC4')">
+        <input type="text" inputmode="numeric" maxlength="1" class="ci" id="modalC6" oninput="cn(this,null)" onkeydown="cb(event,'modalC6','modalC5')">
+      </div>
+
+      <div class="resend" id="modalResendWrap">
+        Отправить повторно через <span id="modalTimerSec">60</span> сек
+        <button class="resend-btn" id="modalResendBtn" onclick="modalResendCode()">Отправить снова</button>
+      </div>
+
+      <button class="btn btn-back" onclick="modalGoBack()">← Назад</button>
+      <button class="btn" id="modalReg2Btn" onclick="doModalReg2()">Подтвердить</button>
+
+      <div class="auth-link">
+        Уже есть аккаунт? <a href="#" onclick="event.preventDefault(); modalGoTo('login')">Войти</a>
+      </div>
+    </div>
+
+  </div>
+</div>

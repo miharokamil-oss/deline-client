@@ -1,0 +1,103 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                    ШПАРГАЛКА - САМОЕ ВАЖНОЕ                      ║
+╚══════════════════════════════════════════════════════════════════╝
+
+📖 ЧИТАЙ: ИНСТРУКЦИЯ_ДЛЯ_ЧАЙНИКОВ.md
+
+═══════════════════════════════════════════════════════════════════
+
+🔑 ЧТО НУЖНО ПОЛУЧИТЬ В XSOLLA:
+
+1. MERCHANT ID - число, например: 123456
+2. PROJECT ID - число, например: 789012
+3. API KEY - строка, например: sk_live_xxxxxxxxxx
+4. WEBHOOK SECRET - строка, например: whsec_xxxxxxxxxx
+
+Где брать:
+- Merchant ID: Company settings → Company
+- Project ID: Project settings
+- API Key: Company settings → API keys → Generate
+- Webhook Secret: Project settings → Webhooks
+
+═══════════════════════════════════════════════════════════════════
+
+🌐 ЧТО НУЖНО СДЕЛАТЬ НА RENDER.COM:
+
+1. Зарегистрироваться через GitHub
+2. Создать Web Service из репозитория
+3. Настройки:
+   - Root Directory: backend
+   - Build Command: npm install
+   - Start Command: npm start
+   - Plan: Free
+
+4. Добавить переменные окружения:
+   XSOLLA_MERCHANT_ID = твой_merchant_id
+   XSOLLA_PROJECT_ID = твой_project_id
+   XSOLLA_API_KEY = твой_api_key
+   XSOLLA_WEBHOOK_SECRET = твой_webhook_secret
+   SUPABASE_URL = https://xlruthqgapbgxfowavln.supabase.co
+   SUPABASE_KEY = твой_supabase_key
+   PORT = 10000
+
+5. Получить URL: https://твой-backend.onrender.com
+
+═══════════════════════════════════════════════════════════════════
+
+📝 ЧТО НУЖНО ОБНОВИТЬ НА САЙТЕ:
+
+1. Файл config.js:
+   Замени URL на свой:
+   'https://твой-backend.onrender.com'
+
+2. В Xsolla → Webhooks:
+   Добавь URL:
+   https://твой-backend.onrender.com/api/payment/webhook
+
+═══════════════════════════════════════════════════════════════════
+
+🧪 КАК ТЕСТИРОВАТЬ:
+
+1. Открой: https://твой-backend.onrender.com/health
+   Должно показать: {"status":"ok"}
+
+2. На сайте:
+   - Магазин → Купить → Xsolla → Оплатить
+   - Карта: 4111 1111 1111 1111
+   - CVV: 123
+   - Срок: 12/25
+
+═══════════════════════════════════════════════════════════════════
+
+❓ ЧАСТЫЕ ОШИБКИ:
+
+1. "Backend не отвечает"
+   → Подожди 30 секунд (Render просыпается)
+
+2. "Failed to create payment"
+   → Проверь API ключи в Render
+
+3. "Webhook не работает"
+   → Проверь URL webhook в Xsolla
+
+4. "Order not found"
+   → Проверь таблицу orders в Supabase
+
+═══════════════════════════════════════════════════════════════════
+
+💰 СТОИМОСТЬ:
+
+Render.com: БЕСПЛАТНО (750 часов/месяц)
+Xsolla: БЕСПЛАТНО (комиссия 5-7% с платежей)
+Supabase: БЕСПЛАТНО (до 500 МБ)
+
+ИТОГО: ПОЛНОСТЬЮ БЕСПЛАТНО! 🎉
+
+═══════════════════════════════════════════════════════════════════
+
+📞 НУЖНА ПОМОЩЬ?
+
+Читай: ИНСТРУКЦИЯ_ДЛЯ_ЧАЙНИКОВ.md
+Там все расписано по шагам с картинками (в уме)
+
+═══════════════════════════════════════════════════════════════════

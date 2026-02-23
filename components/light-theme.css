@@ -1,0 +1,235 @@
+/* ============================================================
+   ZENEX CLIENT — LIGHT THEME STYLES
+   ============================================================ */
+
+/* Базовые стили для светлой темы */
+body.light-theme {
+  color: #1a1a1a;
+}
+
+/* Общие элементы */
+body.light-theme h1,
+body.light-theme h2,
+body.light-theme h3,
+body.light-theme h4 {
+  color: #1a1a1a;
+}
+
+body.light-theme p {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* Карточки */
+body.light-theme .card,
+body.light-theme .info-card,
+body.light-theme .feature-card {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+}
+
+body.light-theme .card:hover,
+body.light-theme .info-card:hover,
+body.light-theme .feature-card:hover {
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.12);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* Кнопки */
+body.light-theme .btn,
+body.light-theme .btn-primary,
+body.light-theme button:not(.theme-toggle):not(.lang-trigger):not(.modal-close) {
+  background: linear-gradient(135deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.15) 100%);
+  border-color: rgba(0,0,0,0.15);
+  color: #1a1a1a;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+body.light-theme .btn:hover,
+body.light-theme .btn-primary:hover {
+  border-color: rgba(0,0,0,0.25);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+}
+
+body.light-theme .btn-secondary {
+  background: transparent;
+  border-color: rgba(0,0,0,0.12);
+  color: rgba(0,0,0,0.7);
+}
+
+body.light-theme .btn-secondary:hover {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.2);
+  color: #1a1a1a;
+}
+
+/* Инпуты */
+body.light-theme input,
+body.light-theme textarea,
+body.light-theme select {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0,0,0,0.12);
+  color: #1a1a1a;
+}
+
+body.light-theme input:focus,
+body.light-theme textarea:focus,
+body.light-theme select:focus {
+  border-color: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.05);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+}
+
+body.light-theme input::placeholder,
+body.light-theme textarea::placeholder {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+/* Модальные окна */
+body.light-theme .modal-overlay {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+body.light-theme .modal,
+body.light-theme .modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+/* Текст */
+body.light-theme .text-muted,
+body.light-theme .subtitle {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Ссылки */
+body.light-theme a {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+body.light-theme a:hover {
+  color: #1a1a1a;
+}
+
+/* Таблицы */
+body.light-theme table {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme th {
+  background: rgba(0, 0, 0, 0.04);
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme td {
+  border-color: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+body.light-theme tr:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Разделители */
+body.light-theme hr,
+body.light-theme .divider {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Бейджи и метки */
+body.light-theme .badge,
+body.light-theme .tag,
+body.light-theme .label {
+  background: rgba(0, 0, 0, 0.08);
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+/* Алерты и уведомления */
+body.light-theme .alert,
+body.light-theme .notification {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+body.light-theme .alert.success {
+  background: rgba(40,180,90,.08);
+  border-color: rgba(40,180,90,.2);
+  color: rgba(30,140,70,.95);
+}
+
+body.light-theme .alert.error {
+  background: rgba(220,50,50,.08);
+  border-color: rgba(220,50,50,.2);
+  color: rgba(180,30,30,.95);
+}
+
+body.light-theme .alert.warning {
+  background: rgba(200,150,50,.08);
+  border-color: rgba(200,150,50,.2);
+  color: rgba(140,100,30,.9);
+}
+
+/* Иконки */
+body.light-theme .icon {
+  filter: brightness(0.3);
+}
+
+/* Прокрутка */
+body.light-theme ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.light-theme ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+body.light-theme ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Специфичные стили для activity-list */
+.activity-list {
+  scrollbar-color: #444 #666 !important;
+  scrollbar-width: thin !important;
+}
+
+.activity-list::-webkit-scrollbar {
+  height: 12px !important;
+}
+
+.activity-list::-webkit-scrollbar-track {
+  background: #666 !important;
+  border-radius: 20px !important;
+  margin: 0 5px !important;
+}
+
+.activity-list::-webkit-scrollbar-thumb {
+  background: #444 !important;
+  border-radius: 20px !important;
+}
+
+.activity-list::-webkit-scrollbar-thumb:hover {
+  background: #555 !important;
+}
+
+body.light-theme .activity-list {
+  scrollbar-color: #666 #999 !important;
+}
+
+body.light-theme .activity-list::-webkit-scrollbar-track {
+  background: #999 !important;
+}
+
+body.light-theme .activity-list::-webkit-scrollbar-thumb {
+  background: #666 !important;
+}
+
+body.light-theme .activity-list::-webkit-scrollbar-thumb:hover {
+  background: #777 !important;
+}

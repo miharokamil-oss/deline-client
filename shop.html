@@ -1,0 +1,2442 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zenex Client - Магазин</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./components/navbar.css">
+  <link rel="stylesheet" href="./components/footer.css">
+  <link rel="stylesheet" href="./components/background.css">
+  <link rel="stylesheet" href="./components/light-theme.css">
+  <link rel="stylesheet" href="./components/support-chat.css">
+  <link rel="stylesheet" href="./components/toast.css">
+  <link rel="stylesheet" href="./components/ban-modal.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="./components/theme.js"></script>
+  <script src="./components/i18n.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      padding-top: 110px;
+    }
+
+    .shop-container { max-width: 1400px; margin: 0 auto; padding: 40px 24px; }
+
+    .shop-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 42px;
+      text-align: center;
+      margin-bottom: 50px;
+      color: rgba(200, 200, 215, 0.9);
+      letter-spacing: 0.04em;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .product-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      backdrop-filter: blur(24px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-card:hover {
+      transform: translateY(-12px);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* Особый тариф */
+    .product-card.special {
+      border-color: rgba(200, 180, 100, 0.25);
+      background: rgba(255, 240, 150, 0.04);
+      position: relative;
+    }
+    
+    .product-card.special::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, rgba(220, 200, 120, 0.6), rgba(200, 180, 100, 0.8), rgba(220, 200, 120, 0.6));
+    }
+    
+    .product-card.special:hover {
+      border-color: rgba(220, 200, 120, 0.4);
+      box-shadow: 0 20px 60px rgba(200,180,80,0.25);
+    }
+
+    /* Картинка товара */
+    .product-image {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-image img {
+      transform: scale(1.08);
+    }
+
+    /* Бейдж */
+    .product-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .product-badge.premium {
+      background: linear-gradient(135deg, rgba(220, 200, 120, 0.35), rgba(200, 180, 100, 0.45));
+      border-color: rgba(220, 200, 120, 0.5);
+      color: rgba(255, 245, 220, 1);
+      font-weight: 900;
+    }
+
+    /* Контент карточки */
+    .product-content {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .product-card h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 19px;
+      margin-bottom: 8px;
+      color: rgba(220, 220, 235, 0.95);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    
+    .product-card.special h3 { 
+      color: rgba(230, 210, 150, 0.95); 
+    }
+
+    .product-price {
+      font-size: 34px;
+      font-weight: 700;
+      color: rgba(200, 200, 220, 0.95);
+      margin-bottom: 12px;
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 0.02em;
+    }
+    
+    .product-card.special .product-price { 
+      color: rgba(230, 210, 150, 0.95); 
+    }
+
+    .product-description {
+      color: rgba(255, 255, 255, 0.55);
+      margin-bottom: 20px;
+      line-height: 1.65;
+      font-size: 13.5px;
+      flex: 1;
+      font-weight: 400;
+    }
+
+    .buy-button {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(120,120,140,0.25) 0%, rgba(80,80,100,0.6) 100%);
+      border: 1px solid rgba(180,180,200,0.2);
+      border-radius: 12px;
+      color: #fff;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: all 0.25s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    .buy-button:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+      border-color: rgba(200,200,220,0.35);
+    }
+    .product-card.special .buy-button {
+      background: linear-gradient(135deg, rgba(160,140,60,0.2) 0%, rgba(120,100,40,0.5) 100%);
+      border-color: rgba(200,180,100,0.2);
+    }
+
+    /* ══════════════════════════════════════════════════════════ */
+    /* ОКНО ОПЛАТЫ - НОВЫЙ ДИЗАЙН */
+    /* ══════════════════════════════════════════════════════════ */
+
+    /* Модальное окно */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      backdrop-filter: blur(16px);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Основной контейнер оплаты */
+    .payment-container {
+      background: linear-gradient(180deg, #1c1c24 0%, #16161d 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 520px;
+      animation: slideUp 0.3s ease;
+      position: relative;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+      padding: 32px 32px 36px;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px) scale(0.94); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Кнопка закрытия */
+    .close-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.5);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.9);
+      transform: rotate(90deg);
+    }
+
+    /* Иконка корзины */
+    .payment-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 18px;
+      background: linear-gradient(135deg, rgba(120, 100, 180, 0.25), rgba(100, 80, 160, 0.35));
+      border: 1px solid rgba(140, 120, 200, 0.3);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      object-fit: contain;
+      padding: 12px;
+    }
+
+    /* Заголовок оплаты */
+    .payment-header {
+      padding: 0 0 24px;
+      text-align: center;
+    }
+
+    .payment-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .payment-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.35);
+      font-weight: 400;
+    }
+
+    /* ── Карточка товара ── */
+    .product-info-card {
+      margin: 0 0 24px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-info-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .product-info-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(220,220,235,0.95);
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Основной контент ── */
+    .payment-content {
+      padding: 0;
+    }
+
+    /* ── Способы оплаты ── */
+    .methods-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 14px;
+    }
+
+    .methods-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .payment-method {
+      background: rgba(255,255,255,0.03);
+      border: 1.5px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 16px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .payment-method:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-2px);
+    }
+
+    .payment-method.selected {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(140,120,200,0.4);
+      box-shadow: 0 0 0 1px rgba(140,120,200,0.2);
+    }
+
+    .payment-method img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      border-radius: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Эффект блика */
+    .payment-method::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255,255,255,0.3) 50%, 
+        transparent 100%);
+      transition: left 0.5s ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .payment-method:hover::after {
+      left: 100%;
+    }
+
+    /* Иконка-заглушка для методов без картинки */
+    .method-icon-fallback {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .payment-method-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* ── Промокод ── */
+    .promo-section {
+      margin-bottom: 24px;
+    }
+
+    .promo-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 12px;
+    }
+
+    .promo-input-wrapper {
+      display: flex;
+      gap: 10px;
+    }
+
+    .promo-input {
+      flex: 1;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: rgba(255,255,255,0.9);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .promo-input::placeholder { color: rgba(255,255,255,0.2); }
+
+    .promo-input:focus {
+      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .promo-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      color: rgba(255,255,255,0.75);
+      padding: 12px 22px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .promo-btn:hover {
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .promo-message {
+      margin-top: 10px;
+      font-size: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .promo-message.success {
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.2);
+      color: rgba(34,197,94,0.85);
+      display: block;
+    }
+
+    .promo-message.error {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: rgba(239,68,68,0.85);
+      display: block;
+    }
+
+    /* ── Итог ── */
+    .payment-summary-inline {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .summary-row:last-child { margin-bottom: 0; }
+
+    .summary-label { 
+      color: rgba(255,255,255,0.4);
+      font-weight: 400;
+    }
+
+    .summary-value {
+      color: rgba(255,255,255,0.85);
+      font-weight: 600;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .summary-row.total {
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      margin-top: 12px;
+      font-size: 15px;
+    }
+
+    .summary-row.total .summary-label {
+      color: rgba(255,255,255,0.65);
+      font-weight: 700;
+    }
+
+    .summary-row.total .summary-value {
+      color: rgba(240,240,250,0.98);
+      font-size: 18px;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    /* ── Кнопка оплаты ── */
+    .pay-button {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(110,90,170,0.75) 0%, rgba(90,70,150,0.85) 100%);
+      border: 1px solid rgba(140,120,200,0.3);
+      border-radius: 12px;
+      color: rgba(255,255,255,0.95);
+      padding: 15px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 4px 20px rgba(100,80,160,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .pay-button:hover {
+      background: linear-gradient(135deg, rgba(120,100,180,0.85) 0%, rgba(100,80,160,0.95) 100%);
+      border-color: rgba(150,130,210,0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(110,90,170,0.35);
+    }
+
+    .pay-button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* ── Безопасность ── */
+    .security-info {
+      margin-top: 16px;
+      font-size: 11px;
+      color: rgba(34,197,94,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .security-info i { font-size: 13px; }
+
+    /* Адаптив */
+    @media (max-width: 768px) { 
+      .products-grid { grid-template-columns: 1fr; }
+      
+      .payment-container {
+        max-width: 100%;
+        padding: 28px 24px 32px;
+      }
+
+      .methods-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .payment-container {
+        padding: 24px 20px 28px;
+      }
+
+      .methods-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .payment-icon {
+        width: 52px;
+        height: 52px;
+      }
+
+      .payment-title {
+        font-size: 22px;
+      }
+
+      .payment-subtitle {
+        font-size: 13px;
+      }
+
+      .promo-input-wrapper {
+        flex-direction: column;
+      }
+
+      .promo-btn {
+        width: 100%;
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════════ */
+    /* КАРУСЕЛЬ ОТЗЫВОВ */
+    /* ══════════════════════════════════════════════════════════ */
+
+    .reviews-section {
+      margin-top: 80px;
+      padding: 60px 0;
+    }
+
+    .reviews-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 36px;
+      text-align: center;
+      margin-bottom: 50px;
+      color: rgba(200, 200, 215, 0.9);
+      letter-spacing: 0.04em;
+    }
+
+    .reviews-carousel-wrapper {
+      position: relative;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 70px;
+      overflow: hidden;
+    }
+
+    .reviews-carousel {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: visible;
+      position: relative;
+      min-height: 460px;
+    }
+
+    .review-card {
+      width: 360px;
+      min-width: 360px;
+      max-width: 360px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 32px;
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.55s ease,
+                  border-color 0.55s ease;
+      backdrop-filter: blur(24px);
+      flex-shrink: 0;
+      position: absolute;
+      opacity: 0;
+      transform: scale(0.75) translateX(0);
+      z-index: 1;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    .review-card.active {
+      opacity: 1;
+      transform: scale(1) translateX(0);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    .review-card.left {
+      opacity: 0.6;
+      transform: scale(0.82) translateX(-88%);
+      z-index: 5;
+    }
+
+    .review-card.right {
+      opacity: 0.6;
+      transform: scale(0.82) translateX(88%);
+      z-index: 5;
+    }
+
+    .review-card.exit-left {
+      opacity: 0;
+      transform: scale(0.7) translateX(-150%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .review-card.exit-right {
+      opacity: 0;
+      transform: scale(0.7) translateX(150%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .review-card.empty-reviews {
+      min-width: 100%;
+      max-width: 100%;
+      text-align: center;
+      padding: 60px 32px;
+      opacity: 1;
+      transform: scale(1);
+      position: relative;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    .empty-reviews p {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 18px;
+    }
+
+    .review-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .review-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .review-user-info {
+      flex: 1;
+    }
+
+    .review-username {
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(200, 200, 215, 0.9);
+      margin-bottom: 6px;
+    }
+
+    .review-stars {
+      display: flex;
+      gap: 4px;
+    }
+
+    .review-stars i {
+      color: #FFD700;
+      font-size: 16px;
+    }
+
+    .review-stars i.empty {
+      color: rgba(255, 255, 255, 0.15);
+    }
+
+    .review-text {
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.7;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .review-date {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Кнопки карусели */
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 50%;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .carousel-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .carousel-btn.prev {
+      left: 10px;
+    }
+
+    .carousel-btn.next {
+      right: 10px;
+    }
+
+    /* Точки навигации */
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .carousel-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .carousel-dot.active {
+      background: rgba(255, 255, 255, 0.8);
+      width: 30px;
+      border-radius: 5px;
+    }
+
+    /* Кнопка добавления отзыва */
+    .add-review-btn {
+      display: block;
+      margin: 40px auto 0;
+      padding: 16px 40px;
+      background: linear-gradient(135deg, rgba(120,120,140,0.25) 0%, rgba(80,80,100,0.6) 100%);
+      border: 1px solid rgba(180,180,200,0.2);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .add-review-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      border-color: rgba(200,200,220,0.35);
+    }
+
+    /* Модальное окно отзыва */
+    .review-modal-container {
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 600px;
+      animation: slideUp 0.3s ease;
+      position: relative;
+    }
+
+    .review-modal-header {
+      padding: 30px 30px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .review-modal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .review-modal-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .review-modal-content {
+      padding: 30px;
+    }
+
+    .rating-section {
+      margin-bottom: 30px;
+    }
+
+    .rating-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stars-input {
+      display: flex;
+      gap: 8px;
+    }
+
+    .stars-input i {
+      font-size: 32px;
+      color: rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .stars-input i:hover,
+    .stars-input i.active {
+      color: #FFD700;
+      transform: scale(1.1);
+    }
+
+    .review-text-section {
+      margin-bottom: 30px;
+    }
+
+    .review-text-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .review-textarea {
+      width: 100%;
+      min-height: 150px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .review-textarea:focus {
+      border-color: rgba(100, 100, 120, 0.5);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .review-textarea::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .char-counter {
+      text-align: right;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 8px;
+    }
+
+    .submit-review-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(100,100,120,0.5) 0%, rgba(70,70,90,0.8) 100%);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .submit-review-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(100, 100, 120, 0.4);
+    }
+
+    .submit-review-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Адаптив для карусели */
+    @media (max-width: 1024px) {
+      .review-card {
+        min-width: calc(50% - 15px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .reviews-carousel-wrapper {
+        padding: 0 60px;
+      }
+
+      .review-card {
+        min-width: 100%;
+      }
+
+      .carousel-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .reviews-carousel-wrapper {
+        padding: 0 50px;
+      }
+
+      .reviews-title {
+        font-size: 28px;
+      }
+
+      .review-card {
+        padding: 24px;
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════════ */
+    /* СВЕТЛАЯ ТЕМА ДЛЯ ОТЗЫВОВ */
+    /* ══════════════════════════════════════════════════════════ */
+
+    body.light-theme .reviews-title {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .review-card {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    body.light-theme .review-card.active {
+      background: rgba(255, 255, 255, 1);
+      border-color: rgba(0, 0, 0, 0.25);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    body.light-theme .review-card.left,
+    body.light-theme .review-card.right {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+
+    body.light-theme .review-username {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .review-text {
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    body.light-theme .review-date {
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    body.light-theme .review-avatar {
+      background: rgba(0, 0, 0, 0.08);
+      border-color: rgba(0, 0, 0, 0.15);
+    }
+
+    body.light-theme .carousel-btn {
+      background: rgba(0, 0, 0, 0.08);
+      border-color: rgba(0, 0, 0, 0.15);
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    body.light-theme .carousel-btn:hover {
+      background: rgba(0, 0, 0, 0.15);
+      border-color: rgba(0, 0, 0, 0.25);
+    }
+
+    body.light-theme .carousel-dot {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    body.light-theme .carousel-dot.active {
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    body.light-theme .add-review-btn {
+      background: linear-gradient(135deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.15) 100%);
+      border-color: rgba(0,0,0,0.2);
+      color: #1a1a1a;
+    }
+
+    body.light-theme .add-review-btn:hover {
+      border-color: rgba(0,0,0,0.35);
+    }
+
+    body.light-theme .review-modal-container {
+      background: rgba(255, 255, 255, 0.98);
+      border-color: rgba(0, 0, 0, 0.15);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    body.light-theme .review-modal-title {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .review-modal-subtitle {
+      color: rgba(0, 0, 0, 0.5);
+    }
+
+    body.light-theme .rating-label,
+    body.light-theme .review-text-label {
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    body.light-theme .review-textarea {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.15);
+      color: #1a1a1a;
+    }
+
+    body.light-theme .review-textarea:focus {
+      border-color: rgba(0, 0, 0, 0.35);
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    body.light-theme .review-textarea::placeholder {
+      color: rgba(0, 0, 0, 0.3);
+    }
+
+    body.light-theme .char-counter {
+      color: rgba(0, 0, 0, 0.5);
+    }
+
+    body.light-theme .submit-review-btn {
+      background: linear-gradient(135deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.2) 100%);
+      color: #1a1a1a;
+    }
+
+    body.light-theme .submit-review-btn:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    body.light-theme .close-btn {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: rgba(0, 0, 0, 0.15);
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    body.light-theme .close-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+      color: #1a1a1a;
+    }
+
+    /* Светлая тема для карточек товаров */
+    body.light-theme .shop-title {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .product-card {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    body.light-theme .product-card:hover {
+      border-color: rgba(0, 0, 0, 0.2);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      background: rgba(255, 255, 255, 1);
+    }
+
+    body.light-theme .product-card.special {
+      background: rgba(255, 250, 230, 0.98);
+      border-color: rgba(200, 180, 100, 0.25);
+    }
+
+    body.light-theme .product-card.special::before {
+      background: linear-gradient(90deg, rgba(200, 180, 100, 0.6), rgba(180, 160, 80, 0.8), rgba(200, 180, 100, 0.6));
+    }
+
+    body.light-theme .product-card.special:hover {
+      border-color: rgba(200, 180, 100, 0.4);
+      box-shadow: 0 20px 60px rgba(200, 180, 80, 0.2);
+    }
+
+    body.light-theme .product-image {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    body.light-theme .product-badge {
+      background: rgba(0, 0, 0, 0.1);
+      border-color: rgba(0, 0, 0, 0.15);
+      color: rgba(0, 0, 0, 0.8);
+    }
+
+    body.light-theme .product-badge.premium {
+      background: linear-gradient(135deg, rgba(200, 180, 100, 0.3), rgba(180, 160, 80, 0.4));
+      border-color: rgba(200, 180, 100, 0.4);
+      color: rgba(100, 80, 30, 1);
+    }
+
+    body.light-theme .product-card h3 {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .product-card.special h3 {
+      color: rgba(120, 90, 30, 0.95);
+    }
+
+    body.light-theme .product-price {
+      color: #2a2a2a;
+    }
+
+    body.light-theme .product-card.special .product-price {
+      color: rgba(120, 90, 30, 0.95);
+    }
+
+    body.light-theme .product-description {
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    body.light-theme .buy-button {
+      background: linear-gradient(135deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.15) 100%);
+      border-color: rgba(0,0,0,0.2);
+      color: #1a1a1a;
+    }
+
+    body.light-theme .buy-button:hover {
+      border-color: rgba(0,0,0,0.35);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    }
+
+    body.light-theme .product-card.special .buy-button {
+      background: linear-gradient(135deg, rgba(140,100,30,0.15) 0%, rgba(120,90,30,0.25) 100%);
+      border-color: rgba(140,100,30,0.3);
+    }
+
+    body.light-theme .product-card.special .buy-button:hover {
+      border-color: rgba(140,100,30,0.5);
+    }
+
+    /* ══════════════ СВЕТЛАЯ ТЕМА - ОКНО ОПЛАТЫ ══════════════ */
+    body.light-theme .modal-overlay {
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(16px);
+    }
+
+    body.light-theme .payment-container {
+      background: linear-gradient(180deg, #f8f8fa 0%, #f2f2f5 100%);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+    }
+
+    body.light-theme .close-btn {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.06);
+      color: rgba(0, 0, 0, 0.5);
+    }
+
+    body.light-theme .close-btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+      color: rgba(0, 0, 0, 0.9);
+    }
+
+    body.light-theme .payment-icon {
+      background: linear-gradient(135deg, rgba(100, 90, 140, 0.12), rgba(80, 70, 120, 0.18));
+      border-color: rgba(100, 90, 140, 0.2);
+    }
+
+    body.light-theme .payment-title {
+      color: #1a1a1a;
+    }
+
+    body.light-theme .payment-subtitle {
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    body.light-theme .product-info-card {
+      background: rgba(0, 0, 0, 0.025);
+      border-color: rgba(0, 0, 0, 0.06);
+    }
+
+    body.light-theme .product-info-name {
+      color: rgba(0, 0, 0, 0.75);
+    }
+
+    body.light-theme .product-info-price {
+      color: rgba(0, 0, 0, 0.9);
+    }
+
+    body.light-theme .methods-title,
+    body.light-theme .promo-label {
+      color: rgba(0, 0, 0, 0.35);
+    }
+
+    body.light-theme .payment-method {
+      background: rgba(0, 0, 0, 0.025);
+      border-color: rgba(0, 0, 0, 0.06);
+    }
+
+    body.light-theme .payment-method:hover {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+
+    body.light-theme .payment-method.selected {
+      background: rgba(100, 90, 140, 0.08);
+      border-color: rgba(100, 90, 140, 0.35);
+      box-shadow: 0 0 0 1px rgba(100, 90, 140, 0.15);
+    }
+
+    body.light-theme .payment-method-name {
+      color: rgba(0, 0, 0, 0.65);
+    }
+
+    body.light-theme .promo-input {
+      background: rgba(0, 0, 0, 0.025);
+      border-color: rgba(0, 0, 0, 0.06);
+      color: rgba(0, 0, 0, 0.9);
+    }
+
+    body.light-theme .promo-input::placeholder {
+      color: rgba(0, 0, 0, 0.25);
+    }
+
+    body.light-theme .promo-input:focus {
+      border-color: rgba(0, 0, 0, 0.15);
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    body.light-theme .promo-btn {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.08);
+      color: rgba(0, 0, 0, 0.75);
+    }
+
+    body.light-theme .promo-btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+      border-color: rgba(0, 0, 0, 0.14);
+      color: rgba(0, 0, 0, 0.9);
+    }
+
+    body.light-theme .payment-summary-inline {
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    body.light-theme .summary-label {
+      color: rgba(0, 0, 0, 0.45);
+    }
+
+    body.light-theme .summary-value {
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    body.light-theme .summary-row.total {
+      border-top-color: rgba(0, 0, 0, 0.06);
+    }
+
+    body.light-theme .summary-row.total .summary-label {
+      color: rgba(0, 0, 0, 0.65);
+    }
+
+    body.light-theme .summary-row.total .summary-value {
+      color: rgba(0, 0, 0, 0.95);
+    }
+
+    body.light-theme .pay-button {
+      background: linear-gradient(135deg, rgba(100, 90, 140, 0.8) 0%, rgba(80, 70, 120, 0.9) 100%);
+      border-color: rgba(100, 90, 140, 0.25);
+      color: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 4px 20px rgba(100, 90, 140, 0.2);
+    }
+
+    body.light-theme .pay-button:hover {
+      background: linear-gradient(135deg, rgba(110, 100, 150, 0.85) 0%, rgba(90, 80, 130, 0.95) 100%);
+      border-color: rgba(110, 100, 150, 0.35);
+      box-shadow: 0 8px 28px rgba(100, 90, 140, 0.3);
+    }
+
+    body.light-theme .security-info {
+      color: rgba(34, 197, 94, 0.75);
+    }
+  </style>
+  <link rel="stylesheet" href="./components/auth-modal.css">
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <div class="shop-container">
+    <h1 class="shop-title" data-i18n="shop-title">Магазин</h1>
+
+    <div class="products-grid">
+
+      <div class="product-card">
+        <div class="product-image">
+          <img src="month.jpg" alt="Deline one month">
+          <div class="product-badge">Выгодно</div>
+        </div>
+        <div class="product-content">
+          <h3 data-i18n="shop-month">Deline one month</h3>
+          <div class="product-price">300₽</div>
+          <p class="product-description" data-i18n="shop-month-desc">Наш полнофункциональный клиент с множеством возможностей для игры на всех серверах.</p>
+          <button class="buy-button" onclick="buyProduct('Deline one month', 300)" data-i18n="shop-buy">Купить</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-image">
+          <img src="year.jpg" alt="Deline one year">
+          <div class="product-badge">Эффективно</div>
+        </div>
+        <div class="product-content">
+          <h3 data-i18n="shop-year">Deline one year</h3>
+          <div class="product-price">450₽</div>
+          <p class="product-description" data-i18n="shop-year-desc">Продлите вашу текущую подписку на 365 дней по выгодной цене.</p>
+          <button class="buy-button" onclick="buyProduct('Deline one year', 450)" data-i18n="shop-buy">Купить</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-image">
+          <img src="beta.jpg" alt="Deline Beta">
+          <div class="product-badge">Эксклюзив</div>
+        </div>
+        <div class="product-content">
+          <h3 data-i18n="shop-beta">Deline Beta</h3>
+          <div class="product-price">850₽</div>
+          <p class="product-description" data-i18n="shop-beta-desc">Эксклюзивный доступ к бета-версии с новейшими функциями и регулярными обновлениями.</p>
+          <button class="buy-button" onclick="buyProduct('Deline Beta', 850)" data-i18n="shop-buy">Купить</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-image">
+          <img src="lifetime.jpg" alt="Deline lifetime">
+          <div class="product-badge">Популярно</div>
+        </div>
+        <div class="product-content">
+          <h3 data-i18n="shop-lifetime">Deline lifetime</h3>
+          <div class="product-price">500₽</div>
+          <p class="product-description" data-i18n="shop-lifetime-desc">Специальная версия клиента с улучшенными функциями обхода античитов.</p>
+          <button class="buy-button" onclick="buyProduct('Deline lifetime', 500)" data-i18n="shop-buy">Купить</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-image">
+          <img src="hwid.jpg" alt="Сброс HWID">
+          <div class="product-badge">Полезно</div>
+        </div>
+        <div class="product-content">
+          <h3 data-i18n="shop-hwid">Сброс HWID</h3>
+          <div class="product-price">250₽</div>
+          <p class="product-description" data-i18n="shop-hwid-desc">Сброс привязки к железу. Используй клиент на другом компьютере.</p>
+          <button class="buy-button" onclick="buyProduct('Сброс HWID', 250)" data-i18n="shop-buy">Купить</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Карусель отзывов -->
+    <div class="reviews-section">
+      <h2 class="reviews-title">Отзывы наших клиентов</h2>
+      
+      <div class="reviews-carousel-wrapper">
+        <button class="carousel-btn prev" onclick="prevReview()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="reviews-carousel" id="reviewsCarousel">
+          <!-- Отзывы будут добавлены через JS -->
+          <div class="review-card empty-reviews">
+            <div class="empty-icon">💬</div>
+            <p>Пока нет отзывов. Будьте первым!</p>
+          </div>
+        </div>
+        
+        <button class="carousel-btn next" onclick="nextReview()">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <div class="carousel-dots" id="carouselDots"></div>
+
+      <button class="add-review-btn" onclick="openReviewModal()">
+        <i class="fas fa-plus"></i> Оставить отзыв
+      </button>
+    </div>
+  </div>
+
+  <!-- Модальное окно добавления отзыва -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="review-modal-container">
+      <button class="close-btn" onclick="closeReviewModal()">✕</button>
+      
+      <div class="review-modal-header">
+        <div class="review-modal-title">Оставить отзыв</div>
+        <div class="review-modal-subtitle">Поделитесь своим мнением о Zenex Client</div>
+      </div>
+
+      <div class="review-modal-content">
+        <div class="rating-section">
+          <label class="rating-label">Ваша оценка</label>
+          <div class="stars-input" id="starsInput">
+            <i class="fas fa-star" data-rating="1" onclick="setRating(1)"></i>
+            <i class="fas fa-star" data-rating="2" onclick="setRating(2)"></i>
+            <i class="fas fa-star" data-rating="3" onclick="setRating(3)"></i>
+            <i class="fas fa-star" data-rating="4" onclick="setRating(4)"></i>
+            <i class="fas fa-star" data-rating="5" onclick="setRating(5)"></i>
+          </div>
+        </div>
+
+        <div class="review-text-section">
+          <label class="review-text-label">Ваш отзыв</label>
+          <textarea 
+            id="reviewText" 
+            class="review-textarea" 
+            placeholder="Расскажите о вашем опыте использования Zenex Client..."
+            maxlength="500"
+          ></textarea>
+          <div class="char-counter">
+            <span id="charCount">0</span>/500
+          </div>
+        </div>
+
+        <button class="submit-review-btn" onclick="submitReview()">
+          Опубликовать отзыв
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно оплаты -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="payment-container">
+      <button class="close-btn" onclick="closePaymentModal()">✕</button>
+      
+      <!-- Иконка корзины -->
+      <img src="./op.png" alt="Payment" class="payment-icon" />
+      
+      <div class="payment-header">
+        <div class="payment-title" data-i18n="shop-checkout">Оформление заказа</div>
+        <div class="payment-subtitle" data-i18n="shop-select-method">Выберите способ оплаты</div>
+      </div>
+
+      <!-- Карточка товара -->
+      <div class="product-info-card">
+        <div class="product-info-name" id="productName">-</div>
+        <div class="product-info-price" id="productInfoPrice">0 ₽</div>
+      </div>
+
+      <div class="payment-content">
+        <!-- Способы оплаты -->
+        <div class="methods-title" data-i18n="shop-payment-method">СПОСОБ ОПЛАТЫ</div>
+        <div class="methods-grid" id="paymentMethodsGrid">
+          <!-- Методы будут добавлены через JS -->
+        </div>
+
+        <!-- Промокод -->
+        <div class="promo-section">
+          <div class="promo-label" data-i18n="shop-promo-label">ПРОМОКОД</div>
+          <div class="promo-input-wrapper">
+            <input 
+              type="text" 
+              class="promo-input" 
+              id="promoInput" 
+              data-i18n-placeholder="shop-promo-placeholder"
+              placeholder="Введите промокод"
+            >
+            <button class="promo-btn" onclick="applyPromo()" data-i18n="shop-apply">Применить</button>
+          </div>
+          <div class="promo-message" id="promoMessage"></div>
+        </div>
+
+        <!-- Итоговая информация -->
+        <div class="payment-summary-inline">
+          <div class="summary-row">
+            <span class="summary-label">Товар</span>
+            <span class="summary-value" id="productNameSummary">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Стоимость</span>
+            <span class="summary-value" id="basePrice">0 ₽</span>
+          </div>
+          <div class="summary-row" id="discountRow" style="display: none;">
+            <span class="summary-label">Скидка</span>
+            <span class="summary-value" style="color: #22C55E;" id="discountValue">0%</span>
+          </div>
+          <div class="summary-row total">
+            <span class="summary-label">Итого</span>
+            <span class="summary-value" id="finalPrice">0 ₽</span>
+          </div>
+        </div>
+
+        <!-- Кнопка оплаты -->
+        <button class="pay-button" id="payButton" onclick="processPayment()" disabled>
+          <i class="fas fa-lock"></i> <span data-i18n="shop-pay">Оплатить</span>
+        </button>
+
+        <!-- Информация о безопасности -->
+        <div class="security-info">
+          <i class="fas fa-shield-alt"></i>
+          <span data-i18n="shop-security">Безопасная оплата через защищённое соединение</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+  
+  <script src="./components/footer.js"></script>
+  <script src="./components/background.js"></script>
+  <script src="./components/transitions.js"></script>
+  <script src="./components/auth-modal.js"></script>
+
+  <script src="./components/toast.js"></script>
+  <script src="./components/ban-modal.js"></script>
+  <script src="./components/ban-checker.js"></script>
+
+  <script>
+    // Загрузка navbar первым делом
+    fetch('./components/navbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('navbar').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = './components/navbar.js';
+        document.body.appendChild(s);
+      })
+      .catch(err => console.error('Ошибка загрузки navbar:', err));
+
+    // ══════════════════════════════════════════════════════════
+    // ОКНО ОПЛАТЫ - JS
+    // ══════════════════════════════════════════════════════════
+
+    // Supabase подключение
+    const SUPABASE_URL = 'https://xlruthqgapbgxfowavln.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhscnV0aHFnYXBiZ3hmb3dhdmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTY2MjMsImV4cCI6MjA4NTI3MjYyM30.dwBTGOPGgEb2Qg3ZaK8Q8XJjx64gdHQy48r_pnLxPic';
+    let supabaseClient = null;
+    
+    console.log('1. Проверка window.supabase:', typeof window.supabase);
+    
+    // Ждем загрузки Supabase
+    if (typeof window.supabase !== 'undefined') {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      console.log('2. Supabase подключен:', supabaseClient);
+    } else {
+      console.error('2. ОШИБКА: Supabase не загружен!');
+    }
+
+    // Способы оплаты
+    const paymentMethods = [
+      { id: 'xsolla',  name: 'Xsolla',  icon: './xsolla.png' },
+      { id: 'funpay',  name: 'FunPay',  icon: './funpay.png' },
+    ];
+
+    // Промокоды (будут загружены из БД)
+    let promoCodes = {};
+
+    let selectedMethod = null;
+    let currentDiscount = 0;
+    let basePrice = 0;
+    let currentProductName = '';
+
+    // Загрузка промокодов из базы данных
+    async function loadPromoCodes() {
+      if (!supabaseClient) {
+        console.error('Supabase клиент не инициализирован');
+        return;
+      }
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('promo_codes')
+          .select('*')
+          .eq('is_active', true);
+
+        if (error) {
+          console.error('Ошибка загрузки промокодов:', error);
+          return;
+        }
+
+        // Преобразуем массив в объект для удобства
+        promoCodes = {};
+        data.forEach(promo => {
+          // Проверяем срок действия
+          const isExpired = promo.expires_at && new Date(promo.expires_at) < new Date();
+          if (isExpired) return;
+
+          promoCodes[promo.code.toUpperCase()] = {
+            discount: promo.discount_percent,
+            description: `Скидка ${promo.discount_percent}%`,
+            max_uses: promo.max_uses,
+            uses: promo.uses_count || 0,
+            code: promo.code
+          };
+        });
+
+        console.log('Промокоды загружены:', Object.keys(promoCodes));
+      } catch(err) {
+        console.error('Ошибка при загрузке промокодов:', err);
+      }
+    }
+
+    // Инициализация при загрузке
+    window.addEventListener('DOMContentLoaded', () => {
+      // Ждем загрузки Supabase
+      setTimeout(() => {
+        renderPaymentMethods();
+        loadPromoCodes();
+        loadReviews();
+      }, 500);
+    });
+
+    // Отрисовка способов оплаты
+    function renderPaymentMethods() {
+      const grid = document.getElementById('paymentMethodsGrid');
+      grid.innerHTML = '';
+
+      paymentMethods.forEach(method => {
+        const div = document.createElement('div');
+        div.className = 'payment-method';
+        div.onclick = () => selectMethod(method.id);
+        div.id = `method-${method.id}`;
+        div.innerHTML = `
+          <img src="${method.icon}" alt="${method.name}" />
+          <div class="payment-method-name">${method.name}</div>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    // Выбор способа оплаты
+    function selectMethod(methodId) {
+      document.querySelectorAll('.payment-method').forEach(el => {
+        el.classList.remove('selected');
+      });
+      
+      const selected = document.getElementById(`method-${methodId}`);
+      if (selected) {
+        selected.classList.add('selected');
+        selectedMethod = methodId;
+        document.getElementById('payButton').disabled = false;
+      }
+    }
+
+    // Применение промокода
+    async function applyPromo() {
+      const input = document.getElementById('promoInput');
+      const code = input.value.trim().toUpperCase();
+      const message = document.getElementById('promoMessage');
+
+      if (!code) {
+        showPromoMessage('Введите промокод', false);
+        return;
+      }
+
+      if (!supabaseClient) {
+        showPromoMessage('✗ База данных недоступна', false);
+        return;
+      }
+
+      // Проверяем промокод в загруженных данных
+      if (promoCodes[code]) {
+        const promo = promoCodes[code];
+        
+        // Проверяем лимит использований
+        if (promo.max_uses && promo.uses >= promo.max_uses) {
+          showPromoMessage('✗ Промокод исчерпан', false);
+          return;
+        }
+
+        currentDiscount = promo.discount;
+        showPromoMessage(`✓ Промокод применён! Скидка ${promo.discount}%`, true);
+        updatePrice();
+        input.disabled = true;
+
+        // Увеличиваем счётчик использований в БД
+        try {
+          const { error } = await supabaseClient
+            .from('promo_codes')
+            .update({ uses_count: promo.uses + 1 })
+            .eq('code', promo.code);
+
+          if (error) {
+            console.error('Ошибка обновления счётчика промокода:', error);
+          }
+        } catch(err) {
+          console.error('Ошибка обновления счётчика промокода:', err);
+        }
+      } else {
+        showPromoMessage('✗ Неверный промокод', false);
+        currentDiscount = 0;
+        updatePrice();
+      }
+    }
+
+    // Показ сообщения о промокоде
+    function showPromoMessage(text, isSuccess) {
+      const message = document.getElementById('promoMessage');
+      message.textContent = text;
+      message.className = `promo-message ${isSuccess ? 'success' : 'error'}`;
+    }
+
+    // Обновление цены
+    function updatePrice() {
+      const discountAmount = Math.round(basePrice * currentDiscount / 100);
+      const finalPrice = basePrice - discountAmount;
+
+      const finalPriceEl = document.getElementById('finalPrice');
+      if (finalPriceEl) {
+        finalPriceEl.textContent = `${finalPrice} ₽`;
+      }
+      
+      if (currentDiscount > 0) {
+        const discountRowEl = document.getElementById('discountRow');
+        const discountValueEl = document.getElementById('discountValue');
+        
+        if (discountRowEl) discountRowEl.style.display = 'flex';
+        if (discountValueEl) discountValueEl.textContent = `-${currentDiscount}% (−${discountAmount} ₽)`;
+      } else {
+        const discountRowEl = document.getElementById('discountRow');
+        if (discountRowEl) discountRowEl.style.display = 'none';
+      }
+    }
+
+    // Открытие окна покупки
+    async function buyProduct(name, price) {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      if (!currentUser) {
+        toast.warning('Войдите в аккаунт для покупки');
+        setTimeout(() => openAuthModal(), 500);
+        return;
+      }
+
+      currentProductName = name;
+      basePrice = price;
+      currentDiscount = 0;
+
+      document.getElementById('productName').textContent = name;
+      document.getElementById('productNameSummary').textContent = name;
+      document.getElementById('productInfoPrice').textContent = `${price} ₽`;
+      document.getElementById('basePrice').textContent = `${price} ₽`;
+      
+      document.getElementById('promoInput').value = '';
+      document.getElementById('promoInput').disabled = false;
+      document.getElementById('promoMessage').className = 'promo-message';
+      
+      updatePrice();
+      
+      selectedMethod = null;
+      document.querySelectorAll('.payment-method').forEach(el => {
+        el.classList.remove('selected');
+      });
+      document.getElementById('payButton').disabled = true;
+
+      console.log('КУПИТЬ: Открываем модалку');
+      openPaymentModal();
+    }
+
+    // Обработка оплаты
+    async function processPayment() {
+      if (!selectedMethod) {
+        showNotification({
+          title: 'Выберите способ оплаты',
+          message: 'Пожалуйста, выберите способ оплаты',
+          type: 'warning'
+        });
+        return;
+      }
+
+      const discountAmount = Math.round(basePrice * currentDiscount / 100);
+      const finalPrice = basePrice - discountAmount;
+      
+      // Получаем текущего пользователя
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      if (!currentUser) {
+        showNotification({
+          title: 'Ошибка',
+          message: 'Пользователь не авторизован',
+          type: 'error'
+        });
+        return;
+      }
+
+      // Блокируем кнопку оплаты
+      const payButton = document.getElementById('payButton');
+      payButton.disabled = true;
+      payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Обработка...';
+
+      try {
+        // Создаем платеж через backend
+        const response = await fetch(`${CONFIG.BACKEND_URL}/api/payment/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            userId: currentUser.id,
+            productName: currentProductName,
+            amount: finalPrice,
+            email: currentUser.email
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка создания платежа');
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.paymentUrl) {
+          // Сохраняем информацию о заказе для возврата
+          localStorage.setItem('pendingOrder', JSON.stringify({
+            orderId: data.orderId,
+            productName: currentProductName,
+            amount: finalPrice
+          }));
+
+          // Перенаправляем на страницу оплаты Xsolla
+          window.location.href = data.paymentUrl;
+        } else {
+          throw new Error('Не удалось получить ссылку на оплату');
+        }
+
+      } catch (error) {
+        console.error('Payment error:', error);
+        showNotification({
+          title: 'Ошибка оплаты',
+          message: error.message || 'Не удалось создать платеж. Попробуйте позже.',
+          type: 'error'
+        });
+
+        // Разблокируем кнопку
+        payButton.disabled = false;
+        payButton.innerHTML = '<i class="fas fa-lock"></i> <span data-i18n="shop-pay">Оплатить</span>';
+      }
+    }
+
+    // Открытие модального окна
+    function openPaymentModal() {
+      document.getElementById('paymentModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Закрытие модального окна
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    // Закрытие по клику вне окна
+    document.getElementById('paymentModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closePaymentModal();
+      }
+    });
+
+    // ══════════════════════════════════════════════════════════
+    // КАРУСЕЛЬ ОТЗЫВОВ
+    // ══════════════════════════════════════════════════════════
+
+    let reviews = [];
+    let currentReviewIndex = 0;
+    let selectedRating = 0;
+
+    // Функция для очистки формы отзыва
+    function clearReviewForm() {
+      document.getElementById('reviewText').value = '';
+      document.getElementById('charCount').textContent = '0';
+      selectedRating = 0;
+      document.querySelectorAll('.stars-input i').forEach(star => star.classList.remove('active'));
+    }
+
+    // Загрузка отзывов из БД
+    async function loadReviews() {
+      console.log('3. loadReviews вызвана');
+      console.log('4. supabaseClient:', supabaseClient);
+      
+      if (!supabaseClient) {
+        console.error('5. ОШИБКА: supabaseClient не инициализирован');
+        return;
+      }
+
+      try {
+        console.log('6. Запрос к БД...');
+        const { data, error } = await supabaseClient
+          .from('reviews')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        console.log('7. Результат:', { data, error });
+
+        if (error) {
+          console.error('8. ОШИБКА загрузки:', error);
+          return;
+        }
+
+        reviews = data || [];
+        console.log('9. Отзывов загружено:', reviews.length);
+        renderReviews();
+      } catch(err) {
+        console.error('10. ОШИБКА catch:', err);
+      }
+    }
+
+    // Построить карточку отзыва
+    function buildReviewCard(item, index) {
+      const stars = Array(5).fill(0).map((_, i) =>
+        `<i class="fas fa-star ${i < item.rating ? '' : 'empty'}"></i>`
+      ).join('');
+      const date = new Date(item.created_at).toLocaleDateString('ru-RU', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      });
+      const div = document.createElement('div');
+      div.className = 'review-card';
+      div.dataset.index = index;
+      
+      // Загружаем аватарку пользователя из таблицы users
+      loadUserAvatar(item.username).then(avatarUrl => {
+        const avatarContent = avatarUrl 
+          ? `<img src="${avatarUrl}" alt="${item.username}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />`
+          : `<span style="font-size: 24px; font-weight: 700;">${(item.username || 'А')[0].toUpperCase()}</span>`;
+        
+        const avatarDiv = div.querySelector('.review-avatar');
+        if (avatarDiv) {
+          avatarDiv.innerHTML = avatarContent;
+        }
+      });
+      
+      div.innerHTML = `
+        <div class="review-header">
+          <div class="review-avatar"><span style="font-size: 24px; font-weight: 700;">${(item.username || 'А')[0].toUpperCase()}</span></div>
+          <div class="review-user-info">
+            <div class="review-username">${item.username || 'Аноним'}</div>
+            <div class="review-stars">${stars}</div>
+          </div>
+        </div>
+        <div class="review-text">${item.review_text}</div>
+        <div class="review-date">${date}</div>
+      `;
+      return div;
+    }
+
+    // Загрузить аватарку пользователя из таблицы users
+    async function loadUserAvatar(username) {
+      if (!supabaseClient) return null;
+      
+      try {
+        const { data, error } = await supabaseClient
+          .from('users')
+          .select('avatar')
+          .eq('username', username)
+          .single();
+        
+        if (error || !data) return null;
+        return data.avatar;
+      } catch(err) {
+        console.error('Ошибка загрузки аватарки:', err);
+        return null;
+      }
+    }
+
+    // Инициальная отрисовка — создаём карточки один раз
+    function renderReviews() {
+      const carousel = document.getElementById('reviewsCarousel');
+      const dotsContainer = document.getElementById('carouselDots');
+
+      if (reviews.length === 0) {
+        carousel.innerHTML = `
+          <div class="review-card empty-reviews">
+            <div class="empty-icon">💬</div>
+            <p>Пока нет отзывов. Будьте первым!</p>
+          </div>`;
+        dotsContainer.innerHTML = '';
+        return;
+      }
+
+      carousel.innerHTML = '';
+      reviews.forEach((item, index) => {
+        const card = buildReviewCard(item, index);
+        carousel.appendChild(card);
+      });
+
+      dotsContainer.innerHTML = reviews.map((_, index) =>
+        `<div class="carousel-dot" onclick="goToReview(${index})"></div>`
+      ).join('');
+
+      // Расставляем классы без анимации
+      applyPositions(false);
+    }
+
+    // Расставить классы позиций. animated=true — через transition
+    function applyPositions(animated) {
+      const cards = document.querySelectorAll('#reviewsCarousel .review-card:not(.empty-reviews)');
+      const dots  = document.querySelectorAll('.carousel-dot');
+      const n = reviews.length;
+      if (!n) return;
+
+      const prevIdx = (currentReviewIndex - 1 + n) % n;
+      const nextIdx = (currentReviewIndex + 1) % n;
+
+      cards.forEach((card, i) => {
+        // Убираем все позиционные классы
+        card.classList.remove('active', 'left', 'right', 'exit-left', 'exit-right');
+
+        if (i === currentReviewIndex) {
+          card.classList.add('active');
+        } else if (i === prevIdx) {
+          card.classList.add('left');
+        } else if (i === nextIdx) {
+          card.classList.add('right');
+        }
+        // остальные — без класса (opacity:0 по умолчанию)
+      });
+
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentReviewIndex);
+      });
+    }
+
+    let carouselAnimating = false;
+
+    // Переключение с анимацией
+    function updateCarousel(direction) {
+      if (carouselAnimating) return;
+      carouselAnimating = true;
+      applyPositions(true);
+      setTimeout(() => { carouselAnimating = false; }, 560);
+    }
+
+    // Следующий отзыв
+    function nextReview() {
+      if (reviews.length === 0) return;
+      currentReviewIndex = (currentReviewIndex + 1) % reviews.length;
+      updateCarousel('next');
+    }
+
+    // Предыдущий отзыв
+    function prevReview() {
+      if (reviews.length === 0) return;
+      currentReviewIndex = (currentReviewIndex - 1 + reviews.length) % reviews.length;
+      updateCarousel('prev');
+    }
+
+    // Переход к конкретному отзыву
+    function goToReview(index) {
+      if (index === currentReviewIndex) return;
+      currentReviewIndex = index;
+      updateCarousel();
+    }
+
+    // Автопрокрутка каждые 5 секунд
+    setInterval(() => {
+      if (reviews.length > 1) {
+        nextReview();
+      }
+    }, 5000);
+
+    // Открытие модального окна отзыва
+    async function openReviewModal() {
+      console.log('ОТЗЫВ: Начало');
+      
+      if (!supabaseClient) {
+        toast.error('База данных недоступна');
+        return;
+      }
+
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      if (!currentUser) {
+        toast.warning('Войдите в аккаунт чтобы оставить отзыв');
+        setTimeout(() => window.location.href = 'auth.html', 1500);
+        return;
+      }
+
+      try {
+        const { data: existingReview, error } = await supabaseClient
+          .from('reviews')
+          .select('*')
+          .eq('username', currentUser.username)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Ошибка проверки отзыва:', error);
+          toast.error('Ошибка проверки отзыва');
+          return;
+        }
+
+        if (existingReview) {
+          toast.warning('Вы уже оставили отзыв!');
+          return;
+        }
+
+        console.log('ОТЗЫВ: Открываем модалку');
+        document.getElementById('reviewModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        selectedRating = 0;
+        document.querySelectorAll('.stars-input i').forEach(star => {
+          star.classList.remove('active');
+        });
+        document.getElementById('reviewText').value = '';
+        document.getElementById('charCount').textContent = '0';
+
+      } catch(err) {
+        console.error('ОТЗЫВ: Ошибка catch:', err);
+        toast.error('Произошла ошибка');
+      }
+    }
+
+    // Закрытие модального окна отзыва
+    function closeReviewModal() {
+      document.getElementById('reviewModal').classList.remove('active');
+      document.body.style.overflow = 'auto';
+      clearReviewForm();
+    }
+
+    // Установка рейтинга
+    function setRating(rating) {
+      selectedRating = rating;
+      const stars = document.querySelectorAll('.stars-input i');
+      stars.forEach((star, index) => {
+        star.classList.toggle('active', index < rating);
+      });
+    }
+
+    // Отправка отзыва
+    async function submitReview() {
+      if (!supabaseClient) {
+        toast.error('База данных недоступна');
+        return;
+      }
+
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      if (!currentUser) {
+        toast.warning('Войдите в аккаунт');
+        return;
+      }
+
+      const reviewText = document.getElementById('reviewText').value.trim();
+
+      if (selectedRating === 0) {
+        toast.warning('Пожалуйста, выберите количество звезд');
+        return;
+      }
+
+      if (!reviewText) {
+        toast.warning('Пожалуйста, напишите текст отзыва');
+        return;
+      }
+
+      if (reviewText.length < 10) {
+        toast.warning('Отзыв должен содержать минимум 10 символов');
+        return;
+      }
+
+      try {
+        console.log('Отправка отзыва:', { username: currentUser.username, rating: selectedRating, text: reviewText });
+        
+        const { data, error } = await supabaseClient
+          .from('reviews')
+          .insert([{
+            username: currentUser.username,
+            rating: selectedRating,
+            review_text: reviewText
+          }])
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Ошибка БД:', error);
+          throw error;
+        }
+        
+        console.log('Отзыв создан:', data);
+
+        // Логируем действие
+        try {
+          await supabaseClient.from('activity_log').insert({
+            username: currentUser.username,
+            action_type: 'review',
+            title: 'Добавлен отзыв',
+            description: `Оценка: ${selectedRating} звезд`,
+            icon: 'star'
+          });
+        } catch(e) { console.log('Activity log error:', e); }
+
+        toast.success('Спасибо за отзыв!');
+        closeReviewModal();
+        loadReviews();
+
+      } catch(err) {
+        console.error('Ошибка отправки отзыва:', err);
+        toast.error('Ошибка: ' + err.message);
+      }
+    }
+
+    // Закрытие модального окна отзыва по клику вне окна
+    document.getElementById('reviewModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeReviewModal();
+      }
+    });
+
+    // Экранирование HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Счетчик символов
+    document.addEventListener('DOMContentLoaded', () => {
+      const textarea = document.getElementById('reviewText');
+      if (textarea) {
+        textarea.addEventListener('input', () => {
+          document.getElementById('charCount').textContent = textarea.value.length;
+        });
+      }
+    });
+  </script>
+  <script src="./components/theme.js"></script>
+
+  <script>
+    // Смена картинок при переключении темы
+    const productImages = [
+      { dark: 'month.jpg', light: 'month1.jpg' },
+      { dark: 'year.jpg', light: 'year1.jpg' },
+      { dark: 'beta.jpg', light: 'beta1.jpg' },
+      { dark: 'lifetime.jpg', light: 'lifetime1.jpg' },
+      { dark: 'hwid.jpg', light: 'hwid1.jpg' }
+    ];
+
+    function updateProductImages() {
+      const isLight = document.body.classList.contains('light-theme');
+      const cards = document.querySelectorAll('.product-card');
+      
+      cards.forEach((card, index) => {
+        const img = card.querySelector('.product-image img');
+        if (img && productImages[index]) {
+          img.src = isLight ? productImages[index].light : productImages[index].dark;
+        }
+      });
+    }
+
+    // Обновляем картинки при загрузке
+    document.addEventListener('DOMContentLoaded', updateProductImages);
+
+    // Следим за изменением темы
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          updateProductImages();
+        }
+      });
+    });
+
+    observer.observe(document.body, { attributes: true });
+  </script>
+
+  <div id="support-chat-placeholder"></div>
+  
+  <!-- Конфигурация backend URL -->
+  <script src="./config.js"></script>
+  
+  <script>
+    fetch('./components/support-chat.html').then(r=>r.text()).then(h=>{
+      document.getElementById('support-chat-placeholder').innerHTML=h;
+      const s=document.createElement('script');s.src='./components/support-chat.js';document.body.appendChild(s);
+    }).catch(()=>{});
+  </script>
+</body>
+</html>

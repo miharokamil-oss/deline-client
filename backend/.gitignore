@@ -1,0 +1,13 @@
+# Переменные окружения (НЕ загружать на GitHub!)
+.env
+
+# Зависимости
+node_modules/
+
+# Логи
+*.log
+npm-debug.log*
+
+# Временные файлы
+.DS_Store
+Thumbs.db

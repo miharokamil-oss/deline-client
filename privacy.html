@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zenex Client - Обработка персональных данных</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./components/navbar.css">
+  <link rel="stylesheet" href="./components/footer.css">
+  <link rel="stylesheet" href="./components/background.css">
+  <link rel="stylesheet" href="./components/light-theme.css">
+  <link rel="stylesheet" href="./components/support-chat.css">
+  <link rel="stylesheet" href="./components/ban-modal.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="./components/theme.js"></script>
+  <script src="./components/i18n.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      padding-top: 120px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto 60px;
+      padding: 44px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 20px;
+      backdrop-filter: blur(24px);
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      color: rgba(200, 200, 215, 0.9);
+      margin-bottom: 30px;
+      font-size: 32px;
+      letter-spacing: 0.04em;
+    }
+
+    p {
+      margin-bottom: 20px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    a { color: rgba(180, 180, 200, 0.8); }
+  </style>
+  <link rel="stylesheet" href="./components/auth-modal.css">
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <div class="container">
+    <h1 data-i18n="privacy-title">Обработка персональных данных</h1>
+    <p>В соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных» настоящим я полностью и безоговорочно принимаю политику конфиденциальности, даю обществу Зенекс Клиент, согласие на автоматизированную, а также без использования средств автоматизации обработку путем сбора, систематизации, накопления, хранения, уточнения и удаления, а также путем передачи (предоставления) третьим лицам, привлеченным обществом Зенекс Клиент, моих персональных данных:</p>
+    <p>- адрес электронной почты;<br>
+    - информацию об использовании сайта или лаунчера;<br>
+    - информацию о работе вашей операционной системы;<br>
+    - информацию о комплектующих вашего компьютера;<br>
+    - информацию о запущенных процессах и данных системы;<br>
+    - информацию об интерфейсе системы и интерфейсе запущенных процессах;</p>
+    <p>указанных мною на сайте zenexdls.fun, для следующих целей:</p>
+    <p>- писем с целью обратной связи со мной;<br>
+    - оказания услуг, предусмотренных сайтом;<br>
+    - повышения качества оказываемых услуг, качества работы сайта zenexdls.fun и лаунчера;<br>
+    - обработки обращений;<br>
+    - получения программного обеспечения, информации, и иных материалов от zenexdls.fun.</p>
+    <p>Настоящее согласие действует до даты отзыва согласия на обработку персональных данных. Для отзыва необходимо написать письмо на адрес support@zenexdls.fun.</p>
+  </div>
+
+  <div id="footer-placeholder"></div>
+  <script src="./components/footer.js"></script>
+  <script src="./components/background.js"></script>
+  <script src="./components/transitions.js"></script>
+  <script src="./components/auth-modal.js"></script>
+
+  <script>
+    fetch('./components/navbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('navbar').innerHTML = html;
+        setTimeout(() => {
+          const s = document.createElement('script');
+          s.src = './components/navbar.js';
+          document.body.appendChild(s);
+        }, 0);
+      });
+  </script>
+  <script src="./components/theme.js"></script>
+
+  <div id="support-chat-placeholder"></div>
+  <script>
+    fetch('./components/support-chat.html').then(r=>r.text()).then(h=>{
+      document.getElementById('support-chat-placeholder').innerHTML=h;
+      const s=document.createElement('script');s.src='./components/support-chat.js';document.body.appendChild(s);
+    }).catch(()=>{});
+  </script>
+</body>
+</html>

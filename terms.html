@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zenex Client - Пользовательское соглашение</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./components/navbar.css">
+  <link rel="stylesheet" href="./components/footer.css">
+  <link rel="stylesheet" href="./components/background.css">
+  <link rel="stylesheet" href="./components/light-theme.css">
+  <link rel="stylesheet" href="./components/support-chat.css">
+  <link rel="stylesheet" href="./components/ban-modal.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="./components/theme.js"></script>
+  <script src="./components/i18n.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      padding-top: 120px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto 60px;
+      padding: 44px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 20px;
+      backdrop-filter: blur(24px);
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      color: rgba(200, 200, 215, 0.9);
+      margin-bottom: 30px;
+      font-size: 30px;
+      letter-spacing: 0.04em;
+    }
+
+    h2 {
+      font-family: 'Orbitron', sans-serif;
+      color: rgba(170, 170, 190, 0.8);
+      margin: 30px 0 16px;
+      font-size: 18px;
+      letter-spacing: 0.03em;
+    }
+
+    p {
+      margin-bottom: 14px;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    a { color: rgba(180, 180, 200, 0.8); }
+
+    .sign {
+      margin-top: 40px;
+      text-align: center;
+      color: rgba(180, 180, 200, 0.6);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+    }
+  </style>
+  <link rel="stylesheet" href="./components/auth-modal.css">
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <div class="container">
+    <h1 data-i18n="terms-title">Пользовательское соглашение</h1>
+
+    <h2 data-i18n="terms-general">Общие положения</h2>
+    <p>1. Администратор сайта, далее «Продавец», публикует Публичную оферту о реализации Услуг, размещенных на официальном сайте Продавца zenexdls.fun</p>
+    <p>2. В соответствии со статьей 437 Гражданского Кодекса Российской Федерации (ГК РФ) данный документ является публичной офертой, и в случае принятия изложенных ниже условий физическое лицо, производящее акцепт этой оферты, осуществляет оплату Услуги Продавца в соответствии с условиями настоящего Договора.</p>
+    <p>3. На основании вышеизложенного внимательно ознакомьтесь с текстом публичной оферты, и, если вы не согласны с каким-либо пунктом оферты, Вам предлагается отказаться от использования Услуг, предоставляемых Продавцом.</p>
+    <p>«Оферта» – публичное предложение Продавца, адресованное любому физическому лицу, заключить с ним договор на существующих условиях, содержащихся в Договоре, включая все его приложения.</p>
+    <p>«Покупатель» – физическое лицо, заключившее с Продавцом Договор на условиях, содержащихся в Договоре.</p>
+    <p>«Акцепт» – полное и безоговорочное принятие Покупателем условий Договора.</p>
+    <p>«Услуга» – перечень наименований ассортимента, представленный на официальном интернет-сайте.</p>
+    <p>«Заказ» – отдельные позиции из ассортиментного перечня Услуг, указанные Покупателем при оформлении заявки на интернет-сайте.</p>
+
+    <h2 data-i18n="terms-subject">Предмет договора</h2>
+    <p>1. Продавец реализует Услуги в соответствии с действующим прейскурантом, опубликованным на интернет-сайте Продавца в интерактивной форме, а Покупатель производит оплату и принимает Услугу в соответствии с условиями настоящего Договора.</p>
+    <p>2. Настоящий Договор и приложения к нему являются официальными документами Продавца и неотъемлемой частью оферты.</p>
+
+    <h2 data-i18n="terms-order">Оформление заказа</h2>
+    <p>1. Заказ Услуги осуществляется Покупателем через Интернет-сайт «zenexdls.fun»</p>
+    <p>2. При регистрации на интернет-сайте Продавца Покупатель обязуется предоставить следующую регистрационную информацию о себе: никнейм, адрес электронной почты.</p>
+    <p>3. Оплата Покупателем самостоятельно оформленного на интернет-сайте Заказа означает согласие Покупателя с условиями настоящего Договора.</p>
+    <p>4. Срок исполнения Заказа — 1 рабочий день.</p>
+    <p>5. В случае предоставления Покупателем недостоверной информации его контактных данных Продавец за ненадлежащее исполнение Заказа ответственности не несет.</p>
+
+    <h2 data-i18n="terms-payment">Оплата Заказа</h2>
+    <p>1. Оплата исполненного Заказа осуществляется путем передачи Покупателем денежных средств с помощью электронных платежных средств на счет Продавца.</p>
+    <p>2. Цены на Услуги, указанные на интернет-сайте «zenexdls.fun», могут быть изменены Продавцом в одностороннем порядке без уведомления Покупателя.</p>
+    <p>3. Денежные средства принимаются безналичным платежом.</p>
+
+    <h2>Возврат Заказа</h2>
+    <p>1. В соответствии с п. 4. ст. 26.1. Закона РФ № 2300-I «О Защите прав потребителей» Покупатель вправе отказаться от заказанной Услуги в любое время до момента исполнения Заказа.</p>
+    <p>2. Покупатель имеет право предъявить требование о возврате стоимости Услуги не позднее чем через 7 дней с даты принятия Заказа.</p>
+    <p>3. Для возврата денежных средств необходимо обратиться на электронный адрес support@zenexdls.fun.</p>
+
+    <h2>Права, обязанности и ответственность</h2>
+    <p>1. Продавец не несет ответственности за ненадлежащее использование Услуг Покупателем.</p>
+    <p>2. Покупатель не вправе передавать, продавать или обменивать доступ к Услуге, оказанную Продавцом.</p>
+    <p>3. Продавец не несёт ответственности за последствия использования программного обеспечения Покупателем, включая блокировку игровых аккаунтов или ограничение доступа к игровым платформам.</p>
+    <p>4. Программное обеспечение предоставляется исключительно для ознакомительных и учебных целей.</p>
+    <p>5. Покупатель принимает на себя полную ответственность за последствия использования программного обеспечения.</p>
+    <p>6. Программное обеспечение не содержит вредоносного кода.</p>
+
+    <h2>Минимальные системные требования</h2>
+    <p>Процессор: Intel Core i3-3210 или AMD A8-7600 APU<br>
+    Оперативная память: 4 GB RAM<br>
+    Видеокарта: Intel HD Graphics 4000 или AMD Radeon R5 с OpenGL 4.4<br>
+    Место на жестком диске: 8 GB свободного пространства<br>
+    Операционная система: Windows 10 / Windows 11 или выше</p>
+
+    <h2>Рекомендуемые системные требования</h2>
+    <p>Процессор: Intel Core i5-4690 или AMD A10-7800<br>
+    Оперативная память: 8 GB RAM<br>
+    Видеокарта: NVIDIA GeForce 700 Series или AMD Radeon Rx 200 Series с OpenGL 4.5<br>
+    Место на жестком диске: 12 GB свободного пространства<br>
+    Операционная система: Windows 10 / Windows 11 или выше</p>
+
+    <p class="sign">Администратор сайта</p>
+  </div>
+
+  <div id="footer-placeholder"></div>
+  <script src="./components/footer.js"></script>
+  <script src="./components/background.js"></script>
+  <script src="./components/transitions.js"></script>
+  <script src="./components/auth-modal.js"></script>
+
+  <script>
+    fetch('./components/navbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('navbar').innerHTML = html;
+        setTimeout(() => {
+          const s = document.createElement('script');
+          s.src = './components/navbar.js';
+          document.body.appendChild(s);
+        }, 0);
+      });
+  </script>
+  <script src="./components/theme.js"></script>
+
+  <div id="support-chat-placeholder"></div>
+  <script>
+    fetch('./components/support-chat.html').then(r=>r.text()).then(h=>{
+      document.getElementById('support-chat-placeholder').innerHTML=h;
+      const s=document.createElement('script');s.src='./components/support-chat.js';document.body.appendChild(s);
+    }).catch(()=>{});
+  </script>
+</body>
+</html>

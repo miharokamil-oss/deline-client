@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toast Test</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./components/navbar.css">
+  <link rel="stylesheet" href="./components/toast.css">
+  <script src="./components/theme.js"></script>
+  <script src="./components/i18n.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .test-container {
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      margin-bottom: 40px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 16px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: white;
+    }
+    .btn-error {
+      background: linear-gradient(135deg, #f44336, #da190b);
+      color: white;
+    }
+    .btn-warning {
+      background: linear-gradient(135deg, #FFC107, #ff9800);
+      color: white;
+    }
+    .btn-info {
+      background: linear-gradient(135deg, #2196F3, #0b7dda);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo">
+      <img src="https://via.placeholder.com/56" alt="Logo">
+    </a>
+    <div style="flex: 1; text-align: center;">
+      <span style="font-family: 'Orbitron', sans-serif; font-size: 20px;">Toast Test</span>
+    </div>
+  </nav>
+
+  <div class="test-container">
+    <h1>🍞 Тест Тостов</h1>
+    <div class="btn-group">
+      <button class="btn-success" onclick="toast.success('Операция выполнена успешно!')">
+        Success Toast
+      </button>
+      <button class="btn-error" onclick="toast.error('Произошла ошибка!')">
+        Error Toast
+      </button>
+      <button class="btn-warning" onclick="toast.warning('Внимание! Проверьте данные')">
+        Warning Toast
+      </button>
+      <button class="btn-info" onclick="toast.info('Информационное сообщение')">
+        Info Toast
+      </button>
+    </div>
+  </div>
+
+  <script src="./components/toast.js"></script>
+</body>
+</html>
