@@ -196,17 +196,13 @@ app.post('/api/payment/create', async (req, res) => {
         return_url: `https://zenexdls.fun/payment-success.html?order_id=${orderId}`
       },
       purchase: {
-        items: [
-          {
-            sku: `product_${Date.now()}`,
-            name: productName,
-            quantity: 1,
-            price: {
-              amount: parseFloat(amount),
-              currency: 'RUB'
-            }
-          }
-        ]
+        virtual_currency: {
+          quantity: parseFloat(amount),
+          currency: 'RUB'
+        },
+        description: {
+          value: productName
+        }
       },
       custom_parameters: {
         order_id: orderId
@@ -214,7 +210,7 @@ app.post('/api/payment/create', async (req, res) => {
     };
 
     // Правильный endpoint для создания токена
-    const xsollaResponse = await fetch(`https://store.xsolla.com/api/v2/project/${XSOLLA_PROJECT_ID}/admin/payment/token`, {
+    const xsollaResponse = await fetch(`https://store.xsolla.com/api/v2/project/${XSOLLA_PROJECT_ID}/payment/token`, {
       method: 'POST',
       headers: {
         'Authorization': 'Basic ' + Buffer.from(`${XSOLLA_MERCHANT_ID}:${XSOLLA_API_KEY}`).toString('base64'),
