@@ -183,6 +183,15 @@ app.post('/api/payment/create', async (req, res) => {
       });
     }
 
+    // Генерируем подпись для order
+    const orderData = {
+      id: null,
+      currency: 'RUB',
+      sign: crypto.createHmac('sha256', XSOLLA_API_KEY)
+                  .update(`${orderId}${amount}${productName}`)
+                  .digest('hex')
+    };
+
     // Создаем токен платежа для Xsolla
     const paymentData = {
       user: {
@@ -200,10 +209,7 @@ app.post('/api/payment/create', async (req, res) => {
           amount: parseFloat(amount),
           currency: 'RUB'
         },
-        order: {
-          id: orderId,
-          description: productName
-        }
+        order: orderData
       }
     };
 
