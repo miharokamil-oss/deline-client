@@ -198,13 +198,11 @@ app.post('/api/payment/create', async (req, res) => {
       purchase: {
         checkout: {
           amount: parseFloat(amount),
-          currency: 'RUB',
-          custom_parameters: {
-            order_id: orderId
-          }
+          currency: 'RUB'
         },
-        description: {
-          value: productName
+        order: {
+          id: orderId,
+          description: productName
         }
       }
     };
