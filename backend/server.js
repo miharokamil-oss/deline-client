@@ -210,10 +210,10 @@ app.post('/api/payment/create', async (req, res) => {
     };
 
     // Правильный endpoint для создания токена
-    const xsollaResponse = await fetch(`https://api.xsolla.com/merchant/v3/token`, {
+    const xsollaResponse = await fetch(`https://api.xsolla.com/merchant/v2/merchants/${XSOLLA_MERCHANT_ID}/token`, {
       method: 'POST',
       headers: {
-        'Authorization': 'Basic ' + Buffer.from(`${XSOLLA_PROJECT_ID}:${XSOLLA_API_KEY}`).toString('base64'),
+        'Authorization': 'Basic ' + Buffer.from(`${XSOLLA_MERCHANT_ID}:${XSOLLA_API_KEY}`).toString('base64'),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(paymentData)
