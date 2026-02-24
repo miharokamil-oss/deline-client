@@ -196,13 +196,17 @@ app.post('/api/payment/create', async (req, res) => {
         return_url: `https://zenexdls.fun/payment-success.html?order_id=${orderId}`
       },
       purchase: {
-        checkout: {
-          amount: parseFloat(amount),
-          currency: 'RUB'
-        },
-        description: {
-          value: productName
-        }
+        items: [
+          {
+            sku: `product_${Date.now()}`,
+            name: productName,
+            quantity: 1,
+            price: {
+              amount: parseFloat(amount),
+              currency: 'RUB'
+            }
+          }
+        ]
       },
       custom_parameters: {
         order_id: orderId
