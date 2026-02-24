@@ -213,7 +213,7 @@ app.post('/api/payment/create', async (req, res) => {
     const xsollaResponse = await fetch(`https://store.xsolla.com/api/v2/project/${XSOLLA_PROJECT_ID}/admin/paystation/token`, {
       method: 'POST',
       headers: {
-        'Authorization': 'Basic ' + Buffer.from(`${XSOLLA_MERCHANT_ID}:${XSOLLA_API_KEY}`).toString('base64'),
+        'Authorization': 'Basic ' + Buffer.from(`${XSOLLA_PROJECT_ID}:${XSOLLA_API_KEY}`).toString('base64'),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(paymentData)
