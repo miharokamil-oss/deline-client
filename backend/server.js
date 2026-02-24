@@ -198,19 +198,19 @@ app.post('/api/payment/create', async (req, res) => {
       purchase: {
         checkout: {
           amount: parseFloat(amount),
-          currency: 'RUB'
+          currency: 'RUB',
+          custom_parameters: {
+            order_id: orderId
+          }
         },
         description: {
           value: productName
         }
-      },
-      custom_parameters: {
-        order_id: orderId
       }
     };
 
     // Правильный endpoint для создания токена
-    const xsollaResponse = await fetch(`https://store.xsolla.com/api/v2/project/${XSOLLA_PROJECT_ID}/admin/paystation/token`, {
+    const xsollaResponse = await fetch(`https://api.xsolla.com/merchant/v3/token`, {
       method: 'POST',
       headers: {
         'Authorization': 'Basic ' + Buffer.from(`${XSOLLA_PROJECT_ID}:${XSOLLA_API_KEY}`).toString('base64'),
